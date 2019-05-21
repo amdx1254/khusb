@@ -1,0 +1,45 @@
+
+<!DOCTYPE html>
+<html lang="ko">
+
+  <head>
+    <title>LOGIN</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/index.css">
+    <link rel="stylesheet" href="css/login.css">
+
+    <style type="text/css">
+     a:link { color: black; text-decoration: none;}
+     a:visited { color: black; text-decoration: none;}
+     a:hover { color: black; text-decoration: underline;}
+    </style>
+
+
+  </head>
+
+
+  <body>
+
+      <div id="loginer">
+        <div id="form">
+          <form name="login" method="post" enctype="multipart/form-data">
+            <fieldset>
+              <legend>LOGIN !</legend>
+              {% csrf_token %}
+              <input type="text" name="id" placeholder="Enter Your ID">
+              <br><br>
+              {% csrf_token %}
+              <input type="password" name="pwd1" placeholder="Enter Your Password">
+              <br><br>
+              <button type="submit">Submit</button>
+              <br>
+              You Don't Have Your Account? <a href="../register"> Click Here </a>
+            </fieldset>
+          </form>
+        </div>
+      </div>
+            {% if data %}
+            {{ data }}
+            {% endif %}
+  </body>
