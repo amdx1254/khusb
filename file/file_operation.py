@@ -1,17 +1,21 @@
 import os
 from django.conf import settings
 import shutil
+
+
 def create_directory(user, path):
     if not os.path.exists(settings.MEDIA_ROOT+"_"+user):
         os.mkdir(settings.MEDIA_ROOT+"_"+user)
     os.mkdir(settings.MEDIA_ROOT+"_"+user+"/"+path)
     print("GOOD")
 
+
 def create_file(user,path,file, filename):
     fp = open(settings.MEDIA_ROOT+"_"+user+"/"+path+"/"+filename, 'wb')
     for chunk in file.chunks():
         fp.write(chunk)
     fp.close()
+
 
 def download_file(user, path, filename):
     """

@@ -3,6 +3,8 @@ from .models import User
 from django.core.validators import validate_email
 from file.models import File
 from django.conf import settings
+
+
 # 회원 정보 Serializer
 class AccountSerializer(serializers.ModelSerializer):
     class Meta:

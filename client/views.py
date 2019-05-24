@@ -2,7 +2,8 @@ from django.shortcuts import render, redirect, HttpResponseRedirect, HttpRespons
 import requests,json
 import urllib
 from django.conf import settings
-# Create your views here.
+
+
 def check_auth(request):
     if(not 'token' in request.session):
         return False
@@ -70,6 +71,7 @@ def LoginView(request):
 
         return redirect('list-view')
 
+
 def listView(request,path='/'):
     if(path!='/'):
         path='/'+path+"/"
@@ -112,6 +114,7 @@ def listView(request,path='/'):
         else:
             return redirect('list-view')
 
+
 def DownloadView(request, path):
     path='/'+path
     if(not check_auth(request)):
@@ -125,6 +128,7 @@ def DownloadView(request, path):
         if('error' in r):
             return redirect('list-view')
         return HttpResponseRedirect(r['url'])
+
 
 def LogoutView(request):
     del request.session['token']

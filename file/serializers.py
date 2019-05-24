@@ -11,6 +11,7 @@ class FileSerializer(serializers.ModelSerializer):
 
     def get_type(self, obj):
         return obj.set_type()
+
     def create(self, validated_data):
         owner = validated_data['owner']
         parent = validated_data['parent']
