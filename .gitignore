@@ -6,3 +6,6 @@ db.sqlite3
 /static
 .DS_Store
 .config_secret
+.idea
+/file/aws.py
+venv
