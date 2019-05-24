@@ -82,7 +82,7 @@ DATABASES = {
         'ENGINE':'django.db.backends.postgresql',
         'NAME' : 'khusb',
         'USER' : 'khusb',
-        'PASSWORD' : 'cse335khusb',
+        'PASSWORD' : '학수번호+khusb,***********',
         'HOST' : 'khusbdb.cxzbz1qhxcvg.us-east-1.rds.amazonaws.com', #aws일 경우:'rds 인스턴스 명'
         'PORT' : '5432',
     }
