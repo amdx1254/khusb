@@ -2,7 +2,6 @@ from rest_framework import serializers
 from .models import User
 from django.core.validators import validate_email
 from file.models import File
-import os
 from django.conf import settings
 # 회원 정보 Serializer
 class AccountSerializer(serializers.ModelSerializer):
@@ -30,7 +29,5 @@ class AccountSerializer(serializers.ModelSerializer):
         password = validated_data['password']
         user = User.objects.create_user(userid=userid, email=email, password=password, username=username)
         folder = File.objects.create(parent=None, owner=user, name='/', is_directory=True, path='/')
-        if not os.path.exists(settings.MEDIA_ROOT + "_" + user.userid):
-            os.mkdir(settings.MEDIA_ROOT + "_" + user.userid)
         user.save()
         return validated_data
