@@ -78,9 +78,13 @@ WSGI_APPLICATION = 'dropbox.wsgi.application'
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+    'default':{
+        'ENGINE':'django.db.backends.postgresql',
+        'NAME' : 'khusb',
+        'USER' : 'khusb',
+        'PASSWORD' : 'cse335khusb',
+        'HOST' : 'khusbdb.cxzbz1qhxcvg.us-east-1.rds.amazonaws.com', #aws일 경우:'rds 인스턴스 명'
+        'PORT' : '5432',
     }
 }
 
@@ -107,9 +111,10 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/2.2/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+LANGUAGE_CODE = 'ko-kr'
+
+TIME_ZONE = 'Asia/Seuol'
 
 USE_I18N = True
 
