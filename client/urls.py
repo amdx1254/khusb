@@ -9,5 +9,4 @@ urlpatterns = [
     path('logout/',views.LogoutView),
     path('download/',views.DownloadView),
     path('download/<path:path>/', views.DownloadView),
-    path('delete/<path:path>/',views.DeleteView),
 ]

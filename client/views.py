@@ -30,9 +30,6 @@ def CreateAccountView(request):
         # API 서버에 회원가입API에 post로 request보냄.
         r = requests.post('http://127.0.0.1:8000/api/register/', data={'userid':userid, 'username':username, 'password':password, 'email':email})
 
-
-
-        print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",r.text)
         if(r.text.find(userid)>0):
             r = requests.post('http://127.0.0.1:8000/api/login/',
                               data={'userid': userid, 'password': password}).json()
@@ -75,7 +72,7 @@ def LoginView(request):
 
 def listView(request,path='/'):
     if(path!='/'):
-        path='/'+path
+        path='/'+path+"/"
     if(not check_auth(request)):
         return redirect('user-login')
     if(request.method == 'GET'):
@@ -84,8 +81,6 @@ def listView(request,path='/'):
             error = request.GET['error']
         r = requests.get('http://127.0.0.1:8000/api/list'+path, headers={'Authorization': 'Bearer '+ request.session['token'] }).json()
         r['error']=error
-        parentpath = path[:path.rfind('/')]
-        r['parent']=parentpath
         print(r)
         return render(request, 'client/list.html', r)
 
@@ -99,29 +94,21 @@ def listView(request,path='/'):
         # 파일 업로드 부분
         elif('filedata' in request.FILES):
             file = request.FILES['filedata']
-            files = {'upload_file':file}
             r = requests.post('http://127.0.0.1:8000/api/upload/',
                               headers={'Authorization': 'Bearer ' + request.session['token']},
-                              data={'name': file.name, 'is_directory': False, 'path': path}, files=files).json()
+                              data={'name': file.name, 'is_directory': False, 'path': path, 'size' : len(file) }).json()
+            requests.put(r['url'], data=file)
             print("UPLOADED:::::", r)
             if ('error' in r):
                 return HttpResponseRedirect('?error=' + r['error'])
+        elif(not ('filedeata' in request.FILES) and 'path' in request.POST):
+            r = requests.post('http://127.0.0.1:8000/api/delete/',
+                              headers={'Authorization': 'Bearer ' + request.session['token']},
+                              data={'path': request.POST['path']}).json()
+            if ('error' in r):
+                return redirect('list-view')
         if(path!='/'):
-            return redirect('list-view',path[1:])
-        else:
-            return redirect('list-view')
-
-def DeleteView(request, path):
-    path = '/'+path
-    if(not check_auth(request)):
-        return redirect('user-login')
-    if(request.method=='GET'):
-        r = requests.post('http://127.0.0.1:8000/api/delete/', headers={'Authorization': 'Bearer '+request.session['token'] }, data={'path':path}).json()
-        if('error' in r):
-            return redirect('list-view')
-        parentpath = path[1:path.rfind('/')]
-        if(parentpath!=''):
-            return redirect('list-view',path[1:path.rfind('/')])
+            return redirect('list-view',path[1:-1])
         else:
             return redirect('list-view')
 
@@ -137,13 +124,7 @@ def DownloadView(request, path):
         print("DOWNLOADED",r)
         if('error' in r):
             return redirect('list-view')
-        file = open(r['url'], 'rb')
-        data = file.read()
-        file.close()
-        response = HttpResponse(data, content_type=r['type'])
-        response['Content-Disposition'] = 'attachment; filename*=UTF-8\'\'%s' % urllib.parse.quote(r['name'].encode('utf-8'))
-        print("DOWNLOADED",r)
-        return response
+        return HttpResponseRedirect(r['url'])
 
 def LogoutView(request):
     del request.session['token']

@@ -33,6 +33,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     userid = models.CharField(max_length=30, unique=True)
     username = models.CharField(max_length=30)
     date_joined = models.DateTimeField(default=timezone.now)
+    max_size = models.BigIntegerField(default=107374182400)
+    cur_size = models.BigIntegerField(default=0)
 
     objects = UserManager()
 

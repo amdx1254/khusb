@@ -42,7 +42,12 @@
                 <td>
                   <h6>{{ item.size }}</h6>
                 </td>
-                <td><a href="/delete{{item.path}}">삭제</a></td>
+                <td>
+                  <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}<input type="text" hidden="hidden" name="path" value="{{ item.path }}">
+                    {% csrf_token %}<input type="submit" value="삭제" />
+                  </form>
+                </td>
               </tr>
             {% endif %}
             {% endfor %}
@@ -58,7 +63,12 @@
                 <td>
                   <h6>{{ item.size }}</h6>
                 </td>
-                <td><a href="/delete{{item.path}}">삭제</a></td>
+                <td>
+                  <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}<input type="text" hidden="hidden" name="path" value="{{ item.path }}">
+                    {% csrf_token %}<input type="submit" value="삭제" />
+                  </form>
+                </td>
               </tr>
             {% endif %}
             {% endfor %}

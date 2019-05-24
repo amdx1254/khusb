@@ -15,9 +15,7 @@ class File(models.Model):
     path = models.CharField(max_length=50000)
 
     def __str__(self):
-        if self.parent is None:
-            return '/'+self.name
-        return str(self.parent) + '/' + self.name
+        return self.path
 
     def set_type(self):
         types, _ = mimetypes.guess_type(self.name)
