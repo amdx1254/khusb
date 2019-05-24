@@ -9,3 +9,4 @@ db.sqlite3
 .idea
 /file/aws.py
 venv
+*/migrations
