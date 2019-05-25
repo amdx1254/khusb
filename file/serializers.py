@@ -20,7 +20,7 @@ class FileSerializer(serializers.ModelSerializer):
         path = validated_data['path']
         if('size' in validated_data):
             size = validated_data['size']
-            file = File.objects.create(owner=owner, parent=parent, name=name, is_directory=is_directory, path=path, size = size)
+            file = File.objects.create(owner=owner, parent=parent, name=name, is_directory=is_directory, path=path, size=size)
         else:
             file = File.objects.create(owner=owner, parent=parent, name=name, is_directory=is_directory, path=path)
         if(not is_directory):

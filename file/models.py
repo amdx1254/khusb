@@ -9,7 +9,7 @@ class File(models.Model):
     parent = models.ForeignKey('self', related_name='files', on_delete=models.CASCADE, blank=True, null=True)
     name = models.CharField(max_length=200)
     modified = models.DateTimeField(auto_now_add=True, blank=True, null=True)
-    size = models.BigIntegerField(blank=True, null=True)
+    size = models.BigIntegerField(default=0)
     is_directory = models.BooleanField(default=False)
     type = models.CharField(max_length=200, blank=True, null=True)
     path = models.CharField(max_length=50000)
@@ -20,3 +20,4 @@ class File(models.Model):
     def set_type(self):
         types, _ = mimetypes.guess_type(self.name)
         self.type = types
+
