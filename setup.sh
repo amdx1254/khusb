@@ -12,7 +12,7 @@ pip install djangorestframework_jwt
 pip install boot3
 pip install requests
 cd file
-echo $'ikey="ASIAYC6S7VTP2AZGEQHY"\nsecret_key="mlMotYnO/c2ahnkENiF4ZGvegQKKtB8+SBIYHClt"\E:x\n' | vi aws.py
+echo $'ikey=""\nsecret_key=""\E:x\n' | vi aws.py
 cd ..
 python manage.py migrate
 python manage.py makemigrations
