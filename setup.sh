@@ -1,6 +1,3 @@
-git clone https://github.com/Hi-friends/khusb.git
-cd desktop
-cd khusb
 PATH=$PATH:/c/Users/guswl/AppData/Local/Programs/Python/Python37
 PATH=$PATH:/c/Users/guswl/AppData/Local/Programs/Python/Python37/Scripts
 python -m venv myvenv
