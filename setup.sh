@@ -1,3 +1,5 @@
+#! /bin/bash
+
 PATH=$PATH:/c/Users/guswl/AppData/Local/Programs/Python/Python37
 PATH=$PATH:/c/Users/guswl/AppData/Local/Programs/Python/Python37/Scripts
 python -m venv myvenv
