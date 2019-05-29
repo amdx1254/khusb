@@ -1,0 +1,231 @@
+@font-face {
+  font-family: 'DXStar';
+  src: url("main_image/DXSnUB-KSCpc-EUC-H.ttf") format('truetype');
+}
+
+@font-face {
+  font-family: 'KoPubDotum';
+  src: url("main_image/KoPubDotumBold.ttf") format('truetype');
+}
+
+@font-face {
+  font-family: 'UhBeeKeongKeong';
+  src: url("main_image/UhBee KeongKeong Bold.ttf") format('truetype');
+}
+
+.main_page {
+  display: grid;
+  width: 100%;
+  height: 640px;
+  grid-template-areas: "nav head"
+                       "nav  path"
+                       "nav  main"
+                       "foot foot";
+  grid-template-rows: 100px 50px 1fr 60px;
+  grid-template-columns: 250px 1fr;
+  background-color: white;
+}
+
+body {
+  background-color: black;
+}
+
+.main_page > nav {
+  grid-area: nav;
+  background-image: url("main_image/blurred_nav.png");
+  background-position: center;
+}
+
+.main_page > header {
+  grid-area: head;
+  background-image: url("main_image/header.PNG");
+  background-position: center;
+  background-size: cover;
+  font-family: UhBeeKeongKeong;
+}
+
+.main_page > path {
+  grid-area: path;
+  background-image: url("main_image/path.png");
+  color: white;
+}
+
+.main_page > path p {
+  vertical-align: middle;
+  padding-left: 30px;
+  font-family: DXStar;
+}
+
+.main_page > main {
+  grid-area: main;
+  background-color : white;
+  margin: 10px;
+  border-radius: 10px;
+}
+
+.main_page > footer {
+  grid-area: foot;
+  color: white;
+  background-image: url(main_image/footer_body.PNG);
+  background-position: bottom;
+}
+
+.nav {
+  display: grid;
+  width: 100%;
+  height: 580px;
+  grid-template-areas: "pic"
+                       "id"
+                       "load"
+                       "direc"
+                       "rocket";
+  grid-template-rows: 170px 50px 50px 1fr 185px;
+  grid-template-columns: 1fr;
+}
+
+.nav > profile_pic {
+  grid-area: pic;
+  margin: 10px;
+}
+
+div.prof_pic img {
+  width: 150px;
+  height: 150px;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  vertical-align: middle;
+  border-radius: 50%;
+}
+
+.nav > id {
+  grid-area: id;
+  text-align: center;
+}
+
+.nav > id p {
+  color: white;
+}
+
+.nav > load {
+  grid-area: load;  
+}
+
+#load {
+  background-color: white;
+  border-radius: 10px;
+  float: left;
+  width: 105px;
+  height: 40px;
+  margin: 10px;
+}
+
+.nav > directory {
+  margin: 10px;
+  border-radius:10%;
+  font-family: KoPubDotum;
+}
+
+ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+}
+
+li {
+  text-align: center;
+  margin-bottom: 5px;
+  background-color: #d9d6c5;
+  border-radius: 10px;
+}
+
+li a {
+  display: block;
+  color: #000;
+  padding: 8px 16px;
+  text-decoration: none;
+}
+
+/* Change the link color on hover */
+li a:hover {
+  background-color: #555;
+  color: white;
+  border-radius: 10px;
+}
+
+.nav > rocket {
+  grid-area: rocket;
+}
+
+#rocket {
+  padding-top: 120px;
+}
+
+.header {
+  display: grid;
+  width: 100%;
+  height: 100px;
+  grid-template-areas: "logo logo logo"
+                       "search space d_day";
+  grid-template-rows: 1fr 40px;
+  grid-template-columns: 600px 1fr 200px;
+}
+
+.header > logo {
+  grid-area: logo;
+}
+
+.header > logo p {
+  color: white;
+  font-size: 40px;
+  padding-top: 5px;
+  margin: 0;
+}
+.header > search {
+  grid-area: search;
+}
+
+input[type=text] {
+  width: 200px;
+  box-sizing: border-box;
+  border: 2px solid #ccc;
+  border-radius: 4px;
+  font-size: 16px;
+  padding: 5px;
+  background-color: white;
+  background-image: url('searchicon.png');
+  background-position: 5px 5px; 
+  background-repeat: no-repeat;
+  -webkit-transition: width 0.4s ease-in-out;
+  transition: width 0.4s ease-in-out;
+}
+
+input[type=text]:focus {
+  width: 100%;
+}
+
+.header > d_day {
+  grid-area: d_day;
+  background-color: white;
+  border-radius: 10px;
+  margin-bottom: 5px;
+  opacity: 0.7;
+}
+
+.table {
+  width: 100%;
+  font-family: KoPubDotum;
+  text-align: center;
+  border-collapse: collapse;
+}
+
+tr {
+  height: 30px;
+  padding: 10px;
+}
+
+.t_head {
+  border-bottom: 1px solid #444444;
+  padding: 10px;
+}
