@@ -225,7 +225,17 @@ tr {
   padding: 10px;
 }
 
-.t_head {
+th {
   border-bottom: 1px solid #444444;
   padding: 10px;
+}
+
+.sort-icon {
+    margin: 0 0 2px 0;
+    height: 16px;
+    cursor: pointer;
+}
+
+.hover:hover {
+  background-color: #EEEEEE;
 }
