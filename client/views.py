@@ -21,16 +21,17 @@ def CreateAccountView(request):
         return render(request, 'client/register.html')
 
     elif(request.method=='POST'):
-        username = request.POST['mbname']
-        userid = request.POST['cursor:pointer']
-        password = request.POST['mbpw']
-        email = request.POST['email']+"@"+request.POST['email_dns']
+        username = request.POST['name']
+        userid = request.POST['email']
+        password = request.POST['password']
+        password_conf = request.POST['password_conf']
+        email = request.POST['email']
         # 하나라도 비어있을 경우 오류 출력
         if(username == '' or userid == '' or password == ''):
             return render(request, 'client/register.html',{'data':"제대로 입력하세요"})
         # API 서버에 회원가입API에 post로 request보냄.
         r = requests.post('http://127.0.0.1:8000/api/register/', data={'userid':userid, 'username':username, 'password':password, 'email':email})
-
+        print(r.json())
         if(r.text.find(userid)>0):
             r = requests.post('http://127.0.0.1:8000/api/login/',
                               data={'userid': userid, 'password': password}).json()
@@ -61,10 +62,10 @@ def LoginView(request):
         return render(request, 'client/login.html')
 
     if(request.method == 'POST'):
-        userid = request.POST['id']
-        pwd = request.POST['pwd1']
+        userid = request.POST['email']
+        pwd = request.POST['password']
         r = requests.post('http://127.0.0.1:8000/api/login/', data={'userid':userid,'password':pwd}).json()
-
+        print(r)
         if('non_field_errors' in r):
             return render(request, 'client/login.html', {'data':'일치하는 정보가 없습니다'})
         request.session['token']=r['token']

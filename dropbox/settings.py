@@ -76,14 +76,13 @@ WSGI_APPLICATION = 'dropbox.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases
-
 DATABASES = {
     'default':{
         'ENGINE':'django.db.backends.postgresql',
-        'NAME' : 'khusb',
+        'NAME' : 'cckhusb',
         'USER' : 'khusb',
-        'PASSWORD' : '학수번호+khusb,***********',
-        'HOST' : 'khusbdb.cxzbz1qhxcvg.us-east-1.rds.amazonaws.com', #aws일 경우:'rds 인스턴스 명'
+        'PASSWORD' : '학수번호+khusb',
+        'HOST' : 'cckhusb.cxzbz1qhxcvg.us-east-1.rds.amazonaws.com', #aws일 경우:'rds 인스턴스 명'
         'PORT' : '5432',
     }
 }

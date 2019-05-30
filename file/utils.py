@@ -1,9 +1,10 @@
 import boto3
 import requests
-from .aws import key, secret_key
+from .aws import key, secret_key, session_token
 s3 = boto3.client('s3',
                        aws_access_key_id=key,
-                       aws_secret_access_key=secret_key)
+                       aws_secret_access_key=secret_key,
+                       aws_session_token =session_token)
 
 bucket = 'khusb-sample'
 
