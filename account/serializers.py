@@ -9,7 +9,7 @@ from django.conf import settings
 class AccountSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('userid', 'username', 'email', 'password')
+        fields = ('username', 'email', 'password')
         extra_kwargs = {
             'password' : {'write_only' : True }
         }
@@ -26,10 +26,9 @@ class AccountSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         username = validated_data['username']
-        userid = validated_data['userid']
         email = validated_data['email']
         password = validated_data['password']
-        user = User.objects.create_user(userid=userid, email=email, password=password, username=username)
+        user = User.objects.create_user(email=email, password=password, username=username)
         folder = File.objects.create(parent=None, owner=user, name='/', is_directory=True, path='/')
         user.save()
         return validated_data

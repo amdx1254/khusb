@@ -1,5 +1,4 @@
 import boto3
-import requests
 from .aws import key, secret_key, session_token
 s3 = boto3.client('s3',
                        aws_access_key_id=key,

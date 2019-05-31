@@ -22,23 +22,25 @@ def CreateAccountView(request):
 
     elif(request.method=='POST'):
         username = request.POST['name']
-        userid = request.POST['email']
+        email = request.POST['email']
         password = request.POST['password']
         password_conf = request.POST['password_conf']
-        email = request.POST['email']
         # 하나라도 비어있을 경우 오류 출력
-        if(username == '' or userid == '' or password == ''):
+        if(username == '' or password == ''):
             return render(request, 'client/register.html',{'data':"제대로 입력하세요"})
+        if(password != password_conf):
+            return render(request, 'client/register.html',{'data':'패스워드가 일치하지 않습니다.'})
         # API 서버에 회원가입API에 post로 request보냄.
-        r = requests.post('http://127.0.0.1:8000/api/register/', data={'userid':userid, 'username':username, 'password':password, 'email':email})
-        print(r.json())
-        if(r.text.find(userid)>0):
+        r = requests.post('http://127.0.0.1:8000/api/register/', data={'email':email,'username':username, 'password':password})
+
+        if(r.text.find(email)>0):
             r = requests.post('http://127.0.0.1:8000/api/login/',
-                              data={'userid': userid, 'password': password}).json()
+                              data={'email': email, 'password': password}).json()
+            print(r)
             request.session['token'] = r['token']
 
             return redirect('list-view')
-            #return render(request, 'client/register.html', {'data':'가입 완료'})
+
         elif(r.text.find("A user with that username")>0):
             return render(request, 'client/register.html', {'data': '존재하는 ID 입니다.'})
         elif(r.text.find('Email is already in use')>0):
@@ -62,10 +64,10 @@ def LoginView(request):
         return render(request, 'client/login.html')
 
     if(request.method == 'POST'):
-        userid = request.POST['email']
+        email = request.POST['email']
         pwd = request.POST['password']
-        r = requests.post('http://127.0.0.1:8000/api/login/', data={'userid':userid,'password':pwd}).json()
-        print(r)
+        r = requests.post('http://127.0.0.1:8000/api/login/', data={'email':email,'password':pwd}).json()
+
         if('non_field_errors' in r):
             return render(request, 'client/login.html', {'data':'일치하는 정보가 없습니다'})
         request.session['token']=r['token']
@@ -85,7 +87,7 @@ def listView(request,path='/'):
         r = requests.get('http://127.0.0.1:8000/api/list'+path, headers={'Authorization': 'Bearer '+ request.session['token'] }).json()
         r['error']=error
         print(r)
-        return render(request, 'client/list.html', r)
+        return render(request, 'client/main.html', r)
 
     if(request.method == 'POST'):
         # 폴더 생성 부분
@@ -100,7 +102,8 @@ def listView(request,path='/'):
             r = requests.post('http://127.0.0.1:8000/api/upload/',
                               headers={'Authorization': 'Bearer ' + request.session['token']},
                               data={'name': file.name, 'is_directory': False, 'path': path, 'size' : len(file) }).json()
-            requests.put(r['url'], data=file)
+            res = requests.put(r['url'], data=file)
+            print(res.content)
             print("UPLOADED:::::", r)
             if ('error' in r):
                 return HttpResponseRedirect('?error=' + r['error'])

@@ -34,10 +34,11 @@ class FolderCreateApi(APIView):
         serializer = FileSerializer(data=request.data)
         if(serializer.is_valid()):
             serializer.save(owner=request.user, parent=directory, is_directory=True, path=folderpath, size=0)
-            url = get_upload_url(str(request.user.userid), folderpath)
+            url = get_upload_url(str(request.user.id), folderpath)
             requests.put(url)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 class FolderListApi(APIView):
     permission_classes = (IsAuthenticated, )
@@ -98,7 +99,7 @@ class FileCreateApi(APIView):
                 tmp.save()
                 tmp=tmp.parent
 
-            url = get_upload_url(str(request.user.userid), serializer.data['path'])
+            url = get_upload_url(str(request.user.id), serializer.data['path'])
             result['item'] = serializer.data
             result['url'] = url
             return Response(result, status=status.HTTP_201_CREATED)
@@ -116,7 +117,7 @@ class FileDeleteApi(APIView):
             if (is_root):
                 return Response({"status": "400", "error": "Cannot remove root directory"},
                                 status=status.HTTP_400_BAD_REQUEST)
-            delete_object(str(request.user.userid), request.data['path'])
+            delete_object(str(request.user.id), request.data['path'])
             request.user.cur_size = request.user.cur_size-int(object.size)
             request.user.save()
             tmp=object.parent
@@ -142,7 +143,7 @@ class FileDownloadApi(APIView):
         try:
             file = File.objects.get(owner=request.user, path=path)
             serializer = FileSerializer(file).data
-            url = get_download_url(str(request.user.userid),path)
+            url = get_download_url(str(request.user.id),path)
             serializer['url'] = url
             return Response(serializer)
         except File.DoesNotExist:
@@ -160,7 +161,7 @@ class FileCopyApi(APIView):
             if(object.IsDirectory == True):
                 return Response({"status": "400", "error": "Cannot copy directory"},
                                 status=status.HTTP_400_BAD_REQUEST)
-            copy_object(str(request.user.userid), request.data['from_path'], request.data['to_path'])
+            copy_object(str(request.user.id), request.data['from_path'], request.data['to_path'])
             new_object = {'name': from_object.name, 'is_directory': from_object.is_directory, 'path': request.data['to_path']}
             serializer = FileSerializer(new_object)
 
@@ -193,7 +194,7 @@ class FileMoveApi(APIView):
             to_parent_object.size = to_parent_object.size+from_object.size
             from_object.save()
             to_parent_object.save()
-            move_object(str(request.user.userid), request.data['from_path'], request.data['to_path'])
+            move_object(str(request.user.id), request.data['from_path'], request.data['to_path'])
             serializer = FileSerializer(from_object)
 
             return Response(serializer.data, status=status.HTTP_200_OK)

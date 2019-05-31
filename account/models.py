@@ -1,4 +1,5 @@
 from django.db import models
+import uuid
 from django.contrib.auth.models import (
     BaseUserManager, AbstractBaseUser, PermissionsMixin
 )
@@ -8,29 +9,27 @@ from django.utils.translation import ugettext_lazy as _
 
 
 class UserManager(BaseUserManager):
-    def create_user(self,userid,  email, username, password=None):
+    def create_user(self, email, username, password=None):
         if not email:
             raise ValueError(_('Users must have an email address'))
-        if not userid:
-            raise ValueError(_('Users must have an ID'))
         if not username:
             raise ValueError(_('Users must have an username'))
-        user = self.model(userid=userid, username=username, email=self.normalize_email(email))
+        user = self.model(username=username, email=self.normalize_email(email))
 
         user.set_password(password)
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, userid, email, username, password):
-        user = self.create_user(userid=userid, email=email, username=username, password=password)
+    def create_superuser(self, email, username, password):
+        user = self.create_user(email=email, username=username, password=password)
         user.is_superuser = True
         user.save(using=self._db)
         return user
 
 
 class User(AbstractBaseUser, PermissionsMixin):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     email = models.EmailField(max_length=255,unique=True)
-    userid = models.CharField(max_length=30, unique=True)
     username = models.CharField(max_length=30)
     date_joined = models.DateTimeField(default=timezone.now)
     max_size = models.BigIntegerField(default=107374182400)
@@ -38,8 +37,8 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     objects = UserManager()
 
-    USERNAME_FIELD = 'userid'
-    REQUIRED_FIELDS = ['username', 'email']
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['username']
 
     class Meta:
         verbose_name = _('user')
@@ -47,13 +46,13 @@ class User(AbstractBaseUser, PermissionsMixin):
         ordering = ('-date_joined',)
 
     def __str__(self):
-        return self.userid
+        return self.id
 
     def get_full_name(self):
-        return self.userid
+        return self.email
 
     def get_short_name(self):
-        return self.userid
+        return self.email
 
     @property
     def is_staff(self):
