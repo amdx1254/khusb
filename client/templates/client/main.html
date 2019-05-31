@@ -63,7 +63,7 @@
                 </div>
             </header>
             <path>
-                <p>/HOME/</p>
+                <p>/HOME{{ path }}</p>
             </path>
             <main>
                 <table class="table" id="Table">
@@ -73,24 +73,26 @@
                         <th>파일 유형&nbsp;<img class="sort-icon" src="{% static 'css/main_image/sort.png' %}"/></th>
                         <th>중요&nbsp;<img class="sort-icon" src="{% static 'css/main_image/sort.png' %}"  onclick="sortTable(2)"></th>
                     </tr>
+                    {% for item in items %}
+                    {% if item.is_directory %}
                     <tr class="hover">
-                        <td><a class="folder" href="#folder">folder/</a></td>
-                        <td>2019.05.25 05:12</td>
+                        <td><a class="folder" href="#folder">{{ item.name }}/</a></td>
+                        <td>{{ item.modified }}</td>
                         <td>folder</td>
                         <td>★</td>
                     </tr>
+                    {% endif %}
+                    {% endfor %}
+                    {% for item in items %}
+                    {% if not item.is_directory %}
                     <tr class="hover">
-                        <td><a class="file" href="#file">file</a></td>
-                        <td>2019.05.25 13:35</td>
+                        <td><a class="file" href="#file">{{ item.name }}</a></td>
+                        <td>{{ item.modified }}</td>
                         <td>file</td>
                         <td>☆</td>
                     </tr>
-					<tr class="hover">
-                        <td><a class="folder" href="#folder">a/</a></td>
-                        <td>2019.05.30 01:13</td>
-                        <td>folder</td>
-                        <td>★</td>
-                    </tr>
+                    {% endif %}
+                    {% endfor %}
                     
                 </table>
             </main>
