@@ -76,7 +76,7 @@
                     {% for item in items %}
                     {% if item.is_directory %}
                     <tr class="hover">
-                        <td><a class="folder" href="#folder">{{ item.name }}/</a></td>
+                        <td><a class="folder" href="/list{{item.path}}">{{ item.name }}/</a></td>
                         <td>{{ item.modified }}</td>
                         <td>folder</td>
                         <td>★</td>
@@ -86,7 +86,7 @@
                     {% for item in items %}
                     {% if not item.is_directory %}
                     <tr class="hover">
-                        <td><a class="file" href="#file">{{ item.name }}</a></td>
+                        <td><a class="file" href="/download{{item.path}}">{{ item.name }}</a></td>
                         <td>{{ item.modified }}</td>
                         <td>file</td>
                         <td>☆</td>
@@ -95,6 +95,21 @@
                     {% endfor %}
                     
                 </table>
+              <form name="create-directory-form" method="post">
+                <table>
+                    <tr>
+                        <th>directory : </th>
+                        <td>{% csrf_token %} <input type="text" name="name"> {% csrf_token %} <input type="submit" value="폴더 생성"></td>
+                    </tr>
+                 </table>
+            </form>
+            <form method="post" enctype="multipart/form-data">
+                File:
+                {% csrf_token %}<input type="text" hidden="hidden" name="path" value="{{ path }}">
+                {% csrf_token %}<input type="file" name="filedata"/>
+                {% csrf_token %}<input type="submit" value="UPLOAD" />
+            </form>
+            <a href="/logout/">로그아웃</a>
             </main>
             <footer>
                 <p>Cloud Computing KHUSB team<br>
