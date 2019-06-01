@@ -105,10 +105,12 @@ div.prof_pic img {
 
 .nav > id p {
   color: white;
+  font-family: UhBeeKeongKeong;
+  font-size: 17px;
 }
 
 .nav > load {
-  grid-area: load;  
+  grid-area: load;
 }
 
 #load {
@@ -195,7 +197,7 @@ input[type=text] {
   padding: 5px;
   background-color: white;
   background-image: url('searchicon.png');
-  background-position: 5px 5px; 
+  background-position: 5px 5px;
   background-repeat: no-repeat;
   -webkit-transition: width 0.4s ease-in-out;
   transition: width 0.4s ease-in-out;
@@ -238,4 +240,15 @@ th {
 
 .hover:hover {
   background-color: #EEEEEE;
+}
+
+a.font{
+  color:white;
+  font-family: KoPubDotum;
+  text-align: center;
+  float: right;
+  position:relative;
+  text-decoration: none;
+  margin-top:20px;
+  margin-right:30px;
 }

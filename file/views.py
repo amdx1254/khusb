@@ -56,6 +56,7 @@ class FolderListApi(APIView):
         result['available_size'] = request.user.max_size - request.user.cur_size
         result['used_size'] = request.user.cur_size
         result['offset'] = 0
+        result['username'] = request.user.username
         if(directory.parent is not None):
             result['parent'] = str(directory.parent)
         else:
