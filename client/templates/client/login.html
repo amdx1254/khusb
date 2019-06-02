@@ -24,7 +24,7 @@
                 </form>
             </white_box>
             <Oauth>
-                <button type="button" onclick="location.href='#Google'"><img src="{% static 'css/login/google.png' %}" style="width:20px;height:20px">&nbsp;&nbsp;Google 계정 로그인</button>
+                <a href="{% url 'social:begin' 'google-oauth2' %}"><button type="button"><img src="{% static 'css/login/google.png' %}" style="width:20px;height:20px">&nbsp;&nbsp;Google 계정 로그인</button></a>
             </Oauth>
         </div>
     </body>

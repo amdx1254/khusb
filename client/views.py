@@ -7,6 +7,7 @@ from django.conf import settings
 def check_auth(request):
     if(not 'token' in request.session):
         return False
+    if()
     r = requests.post('http://127.0.0.1:8000/api/verify/', data={'token' : request.session['token']}).json()
     if('non_field_errors' in r):
         del request.session['token']

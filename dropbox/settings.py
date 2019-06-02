@@ -12,8 +12,41 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 
 import os
 import datetime
+import json
+# Build paths inside the project like this: os.path.join(BASE_DIR, ...)
+from django.core.exceptions import ImproperlyConfigured
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+def get_env(setting, envs):
+    try:
+        return envs[setting]
+    except KeyError:
+        error_msg = "You SHOULD set {} environ".format(setting)
+        raise ImproperlyConfigured(error_msg)
+
+DEV_ENVS = os.path.join(BASE_DIR, "envs_dev.json")
+DEPLOY_ENVS = os.path.join(BASE_DIR, "envs.json")
+
+if os.path.exists(DEV_ENVS): # Develop Env
+    env_file = open(DEV_ENVS)
+elif os.path.exists(DEPLOY_ENVS): # Deploy Env
+    env_file = open(DEPLOY_ENVS)
+else:
+    env_file = None
+
+if env_file is None: # System environ
+    try:
+        GOOGLE_KEY = os.environ['GOOGLE_KEY']
+        GOOGLE_SECRET = os.environ['GOOGLE_SECRET']
+    except KeyError as error_msg:
+        raise ImproperlyConfigured(error_msg)
+else: # JSON env
+    envs = json.loads(env_file.read())
+    GOOGLE_KEY = get_env('GOOGLE_KEY', envs)
+    GOOGLE_SECRET = get_env('GOOGLE_SECRET', envs)
+
 
 
 # Quick-start development settings - unsuitable for production
@@ -41,6 +74,7 @@ INSTALLED_APPS = [
     'account',
     'client',
     'file',
+    'social_django',
 ]
 
 MIDDLEWARE = [
@@ -76,6 +110,7 @@ WSGI_APPLICATION = 'dropbox.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases
+'''
 DATABASES = {
     'default':{
         'ENGINE':'django.db.backends.postgresql',
@@ -84,6 +119,14 @@ DATABASES = {
         'PASSWORD' : '학수번호+khusb',
         'HOST' : 'cckhusb.cxzbz1qhxcvg.us-east-1.rds.amazonaws.com', #aws일 경우:'rds 인스턴스 명'
         'PORT' : '5432',
+    }
+}
+'''
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
 }
 
@@ -154,3 +197,16 @@ AUTH_USER_MODEL = 'account.User'
 
 MEDIA_ROOT = os.path.join(BASE_DIR,'files')
 MEDIA_URL = 'files/'
+
+AUTHENTICATION_BACKENDS = (
+    'social_core.backends.google.GoogleOAuth2',
+    'django.contrib.auth.backends.ModelBackend',
+)
+
+
+LOGIN_REDIRECT_URL = 'home'
+
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = GOOGLE_KEY
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = GOOGLE_SECRET
+
+SOCIAL_AUTH_URL_NAMESPACE = 'social'
