@@ -34,7 +34,7 @@ a {
   height: 490px;
   grid-template-areas: "logo"
                        "white_box"
-                       "Oauth";
+                       "footer";
   grid-template-rows: 30px 1fr 20px;
   font-family: DXStar;
 }
