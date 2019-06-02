@@ -4,6 +4,7 @@ import urllib
 from django.conf import settings
 from rest_framework_jwt.settings import api_settings
 from django.contrib.auth import logout
+from django.views.decorators.csrf import csrf_exempt
 jwt_payload_handler = api_settings.JWT_PAYLOAD_HANDLER
 jwt_encode_handler = api_settings.JWT_ENCODE_HANDLER
 
@@ -87,6 +88,8 @@ def LoginView(request):
 
         return redirect('list-view')
 
+
+@csrf_exempt
 def listView(request,path='/'):
     if(path!='/'):
         path='/'+path+"/"
@@ -98,6 +101,7 @@ def listView(request,path='/'):
             error = request.GET['error']
         r = requests.get('http://127.0.0.1:8000/api/list'+path, headers={'Authorization': 'Bearer '+ request.session['token'] }).json()
         r['error']=error
+        r['token']=request.session['token']
         print(r)
         return render(request, 'client/main.html', r)
 
@@ -109,8 +113,8 @@ def listView(request,path='/'):
             if('error' in r):
                 return HttpResponseRedirect('?path='+path+"&error="+r['error'])
         # 파일 업로드 부분
-        elif('filedata' in request.FILES):
-            file = request.FILES['filedata']
+        elif('filedata' in request.FILES or 'uploadInput' in request.FILES or 'file' in request.FILES):
+            file = request.FILES['file']
             r = requests.post('http://127.0.0.1:8000/api/upload/',
                               headers={'Authorization': 'Bearer ' + request.session['token']},
                               data={'name': file.name, 'is_directory': False, 'path': path, 'size' : len(file) }).json()

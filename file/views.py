@@ -99,7 +99,7 @@ class FileCreateApi(APIView):
             while(not tmp == None):
                 tmp.size = tmp.size+int(size)
                 tmp.save()
-                tmp=tmp.parent
+                tmp = tmp.parent
             uploadid = create_multipart_upload(str(request.user.id), serializer.data['path'])
             #url = get_upload_url(str(request.user.id), serializer.data['path'])
             urls = get_upload_part_url(str(request.user.id), serializer.data['path'], size, uploadid, 5*1024*1024*1024)
@@ -116,12 +116,11 @@ class FileCreateCompleteApi(APIView):
 
     def post(self, request):
         name = request.data['name']
-        UploadId = request.data['uploadid']
-        print("OOOOOOOOOOOOOOOOOOOOOOOOOOOO", request.data['items'])
-        MultipartUpload = json.loads(request.data['items'])
-
-
         path = request.data['path']
+        UploadId = request.data['uploadid']
+        MultipartUpload = json.loads(request.data['items'])
+        MultipartUpload['Parts'] = sorted(MultipartUpload['Parts'], key=lambda k: k['PartNumber'])
+        print("OOOOOOOOOOOOOOOOOOOOOOOOOO111OO", MultipartUpload)
         filepath = path+name
         complete_multipart_upload(str(request.user.id), filepath, UploadId, MultipartUpload)
 
