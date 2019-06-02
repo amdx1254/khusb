@@ -203,7 +203,9 @@ AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
 )
 
-
+SOCIAL_AUTH_GOOGLE_OAUTH2_AUTH_EXTRA_ARGUMENTS = {
+    'prompt': 'select_account'
+}
 LOGIN_REDIRECT_URL = 'social-login'
 
 SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = GOOGLE_KEY
