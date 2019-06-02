@@ -29,6 +29,6 @@ class AccountSerializer(serializers.ModelSerializer):
         email = validated_data['email']
         password = validated_data['password']
         user = User.objects.create_user(email=email, password=password, username=username)
-        folder = File.objects.create(parent=None, owner=user, name='/', is_directory=True, path='/')
+        #folder = File.objects.create(parent=None, owner=user, name='/', is_directory=True, path='/')
         user.save()
         return validated_data

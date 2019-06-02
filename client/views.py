@@ -2,12 +2,14 @@ from django.shortcuts import render, redirect, HttpResponseRedirect, HttpRespons
 import requests,json
 import urllib
 from django.conf import settings
-
+from rest_framework_jwt.settings import api_settings
+from django.contrib.auth import logout
+jwt_payload_handler = api_settings.JWT_PAYLOAD_HANDLER
+jwt_encode_handler = api_settings.JWT_ENCODE_HANDLER
 
 def check_auth(request):
     if(not 'token' in request.session):
         return False
-    if()
     r = requests.post('http://127.0.0.1:8000/api/verify/', data={'token' : request.session['token']}).json()
     if('non_field_errors' in r):
         del request.session['token']
@@ -56,9 +58,19 @@ def CreateAccountView(request):
         return render(request, 'client/register.html', {'data': r.text})
 
 
+def SocialLoginView(request):
+    if(request.method == 'GET'):
+        print(request.user.email)
+        payload = jwt_payload_handler(request.user)
+        token = jwt_encode_handler(payload)
+        request.session['token'] = token
+        return redirect('list-view')
+
+
 def LoginView(request):
     if(check_auth(request)):
         return redirect('list-view')
+
     if(request.method == 'GET'):
         if('token' in request.session):
             return redirect('list-view')
@@ -74,7 +86,6 @@ def LoginView(request):
         request.session['token']=r['token']
 
         return redirect('list-view')
-
 
 def listView(request,path='/'):
     if(path!='/'):
@@ -103,6 +114,7 @@ def listView(request,path='/'):
             r = requests.post('http://127.0.0.1:8000/api/upload/',
                               headers={'Authorization': 'Bearer ' + request.session['token']},
                               data={'name': file.name, 'is_directory': False, 'path': path, 'size' : len(file) }).json()
+
             res = requests.put(r['url'], data=file)
             print(res.content)
             print("UPLOADED:::::", r)
@@ -136,5 +148,5 @@ def DownloadView(request, path):
 
 
 def LogoutView(request):
-    del request.session['token']
+    logout(request)
     return redirect('user-login')
