@@ -115,9 +115,24 @@ def listView(request,path='/'):
                               headers={'Authorization': 'Bearer ' + request.session['token']},
                               data={'name': file.name, 'is_directory': False, 'path': path, 'size' : len(file) }).json()
 
-            res = requests.put(r['url'], data=file)
-            print(res.content)
-            print("UPLOADED:::::", r)
+            part_info = {'Parts':[]}
+            print(r)
+
+            for num in r['url'].keys():
+                chunk = file.read(5*1024*1024*1024)
+                res = requests.put(r['url'][num], data=chunk)
+                part_info['Parts'].append({'PartNumber':int(num), 'ETag': res.headers['ETag'].replace("\"",'')})
+
+            part_info = str(part_info)
+            part_info = part_info.replace("\'","\"")
+            print("Part Info", part_info)
+            com = requests.post('http://127.0.0.1:8000/api/upload_complete/',
+                              headers={'Authorization': 'Bearer ' + request.session['token']},
+                              data={'name': file.name, 'uploadid': r['uploadid'], 'items': part_info, 'path': path}).json()
+            print(com)
+            #res = requests.put(r['url'], data=file)
+            #print(res.content)
+            #print("UPLOADED:::::", r)
             if ('error' in r):
                 return HttpResponseRedirect('?error=' + r['error'])
         elif(not ('filedeata' in request.FILES) and 'path' in request.POST):

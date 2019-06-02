@@ -6,6 +6,7 @@ urlpatterns = [
     path('list/', FolderListApi.as_view()),
     path('list/<path:path>/', FolderListApi.as_view()),
     path('upload/', FileCreateApi.as_view()),
+    path('upload_complete/', FileCreateCompleteApi.as_view()),
     path('download/', FileDownloadApi.as_view()),
     path('download/<path:path>/', FileDownloadApi.as_view()),
     path('delete/',FileDeleteApi.as_view()),

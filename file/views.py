@@ -13,6 +13,7 @@ from rest_framework.permissions import IsAuthenticated
 from .file_operation import *
 from .utils import *
 import requests
+import json
 
 # Create your views here.
 # CreateAPIView를 통해 post를 통해 입력 받은 값을 자동으로 AccountSerializer를 통해 생성시켜줌.
@@ -99,12 +100,33 @@ class FileCreateApi(APIView):
                 tmp.size = tmp.size+int(size)
                 tmp.save()
                 tmp=tmp.parent
-
-            url = get_upload_url(str(request.user.id), serializer.data['path'])
+            uploadid = create_multipart_upload(str(request.user.id), serializer.data['path'])
+            #url = get_upload_url(str(request.user.id), serializer.data['path'])
+            urls = get_upload_part_url(str(request.user.id), serializer.data['path'], size, uploadid, 5*1024*1024*1024)
             result['item'] = serializer.data
-            result['url'] = url
+            result['uploadid'] = uploadid
+            result['url'] = urls
+
             return Response(result, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class FileCreateCompleteApi(APIView):
+    permission_classes = (IsAuthenticated, )
+
+    def post(self, request):
+        name = request.data['name']
+        UploadId = request.data['uploadid']
+        print("OOOOOOOOOOOOOOOOOOOOOOOOOOOO", request.data['items'])
+        MultipartUpload = json.loads(request.data['items'])
+
+
+        path = request.data['path']
+        filepath = path+name
+        complete_multipart_upload(str(request.user.id), filepath, UploadId, MultipartUpload)
+
+        return Response({"status": "complete"})
+
 
 
 class FileDeleteApi(APIView):

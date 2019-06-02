@@ -4,9 +4,8 @@ s3 = boto3.client('s3',
                        aws_access_key_id=key,
                        aws_secret_access_key=secret_key,
                        aws_session_token =session_token)
-
+import math
 bucket = 'khusb-sample'
-
 
 def get_upload_url(user, path):
     url = s3.generate_presigned_url(
@@ -28,6 +27,31 @@ def get_download_url(user, path):
         }
     )
     return url
+
+
+def create_multipart_upload(user, path):
+    result = s3.create_multipart_upload(Bucket=bucket, Key=user+path)
+    return result['UploadId']
+
+
+def get_upload_part_url(user, path,  size, UploadId, chunksize):
+    urls = {}
+    for i in range(1, math.ceil(int(size)/int(chunksize))+1):
+        url = s3.generate_presigned_url(
+            ClientMethod='upload_part',
+            Params={
+                'Bucket': bucket,
+                'Key': user+path,
+                'PartNumber': i,
+                'UploadId': UploadId,
+            }
+        )
+        urls[str(i)] = url
+    return urls
+
+
+def complete_multipart_upload(user, path, UploadId, MultipartUpload):
+    s3.complete_multipart_upload(Bucket=bucket, Key=user+path, UploadId=UploadId, MultipartUpload=MultipartUpload)
 
 
 def delete_object(user, path):
