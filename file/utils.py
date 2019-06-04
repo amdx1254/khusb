@@ -54,6 +54,11 @@ def complete_multipart_upload(user, path, UploadId, MultipartUpload):
     s3.complete_multipart_upload(Bucket=bucket, Key=user+path, UploadId=UploadId, MultipartUpload=MultipartUpload)
 
 
+def abort_multipart_upload(user, path, UploadId):
+    res = s3.abort_multipart_upload(Bucket=bucket, Key=user+path, UploadId=UploadId)
+    print(res)
+
+
 def delete_object(user, path):
     objects_to_delete = s3.list_objects(Bucket=bucket, Prefix=user+path)
     delete_keys = {'Objects': []}

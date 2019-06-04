@@ -10,9 +10,12 @@
     <script src='//unpkg.com/jquery@3/dist/jquery.min.js'></script>
     <script src='//unpkg.com/popper.js@1/dist/umd/popper.min.js'></script>
     <script src='//unpkg.com/bootstrap@4/dist/js/bootstrap.min.js'></script>
+    <script src='{% static 'js/main.js' %}'></script>
 
 </head>
 <body>
+<input type="hidden" id="token" name="token" value="{{ token }}">
+\<input type="hidden" id="path" name="path" value="{{ path }}">
 <div class="main_page">
     <nav>
         <div class="nav">
@@ -139,12 +142,12 @@
                 </button>
             </div>
             <div class="modal-body">
-                <div id="dropbox">
-                    <i class="fas fa-upload" style="font-size: 60px;margin-bottom: 20px;"></i><br>
-                    <span id="uploadFileName"></span>
+                <div id="uploaditems">
+                    <table class="table" id="uploadeditem">
+
+                    </table>
                 </div>
-                <input type="file" id="uploadInput" style="margin-left: 3%;">
-                <progress max="100" value="0" id="uploadProgress"></progress>
+                <input type="file" id="uploadInput" multiple style="margin-left: 3%;">
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
@@ -153,7 +156,7 @@
         </div>
     </div>
 </div>
-<div id="createDirectoryModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="uploadModal"
+<div id="createDirectoryModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="createDirectoryModal"
      aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -174,150 +177,8 @@
     </div>
 </div>
 <script>
-    function sortTable(n) {
-        var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
-        table = document.getElementById("Table");
-        switching = true;
-        dir = "asc";
-        while (switching) {
-            switching = false;
-            rows = table.rows;
-            for (i = 1; i < (rows.length - 1); i++) {
-                shouldSwitch = false;
-                x = rows[i].getElementsByTagName("TD")[n];
-                y = rows[i + 1].getElementsByTagName("TD")[n];
-                if (dir == "asc") {
-                    if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
-                        shouldSwitch = true;
-                        break;
-                    }
-                } else if (dir == "desc") {
-                    if (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
-                        shouldSwitch = true;
-                        break;
-                    }
-                }
-            }
-            if (shouldSwitch) {
-                rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
-                switching = true;
-                switchcount++;
-            } else {
-                if (switchcount == 0 && dir == "asc") {
-                    dir = "desc";
-                    switching = true;
-                }
-            }
-        }
-    }
-
-    $.ajaxSetup({
-        headers: {
-            'Authorization': 'Bearer ' + "{{ token }}"
-        }
-    });
-    var currentDirId = "{{ path }}";
-    var urls;
-    var uploadid;
-    var item = {'Parts': []};
-    var finished = 0;
-    var uploaded_size = [];
-    var total_size = [];
-    $("#uploadBtn").on('click', async function () {
-
-        $.ajax({
-            method: "POST",
-            data: {
-                'name': $("#uploadInput")[0].files[0].name,
-                'is_directory': false,
-                'path': currentDirId,
-                'size': $("#uploadInput")[0].files[0].size
-            },
-            url: '/api/upload/',
-            success: function (data) {
-                urls = data['url'];
-                uploadid = data['uploadid']
-            },
-            error: function (data) {
-                alert("An error occured, please try again later")
-            }
-        }).done(function () {
-            finished = 0;
-            $('#uploadProgress').val(0).show();
-            var slice_length = 1024 * 1024 * 1024 * 5;
-            var processed = 0;
-            var len_url = Object.keys(urls).length;
-            var chunk_num = 1;
-            var len_file = $("#uploadInput")[0].files[0].size;
-            item = {'Parts': []};
-            uploaded_size = [];
-            for (url in urls) {
-                uploaded_size.push(0);
-            }
-            for (url in urls) {
-                filedata = $("#uploadInput")[0].files[0].slice(processed, processed + slice_length);
-                upload_file(urls[url], filedata, chunk_num, len_url, len_file);
-                processed = processed + slice_length;
-                chunk_num++;
-            }
-        });
-
-    });
-
-    $("#createBtn").on('click', async function () {
-        $.ajax({
-            method: "POST",
-            data: {
-                'name': $("#directoryName").val(),
-                'path': currentDirId
-            },
-            url: '/api/create/',
-            success: function (data) {
-                location.reload()
-            },
-            error: function (data) {
-                alert("An error occured, please try again later")
-            }
-        });
-    });
-
-    function upload_file(url, filedata, chunk_id, len_url, len_file) {
-        var xhr = new XMLHttpRequest();
-        xhr.upload.addEventListener("progress", function (e) {
-            uploaded_size[chunk_id - 1] = e.loaded;
-            var sum = 0;
-            for (var i = 0; i < len_url; i++) {
-                sum = sum + uploaded_size[i];
-            }
-            var per = sum * 100 / len_file;
-            $('#uploadProgress').val(per);
-            if (e.lengthComputable) {
-                //console.log(e.loaded / (e.total*len_url));
-
-            }
-        });
 
 
-        xhr.open("PUT", url);
-        xhr.send(filedata);
-        xhr.onreadystatechange = function () {
-            if (this.readyState == this.HEADERS_RECEIVED) {
-                var etag = xhr.getResponseHeader("ETag");
-                etag = etag.replace("/\"/gi", "");
-                item['Parts'].push({'ETag': etag, 'PartNumber': chunk_id});
-                finished++;
-                if (finished == len_url) {
-                    $.post('/api/upload_complete/', {
-                        'name': $("#uploadInput")[0].files[0].name,
-                        'path': currentDirId,
-                        'uploadid': uploadid,
-                        'items': JSON.stringify(item)
-                    });
-                    location.reload();
-                }
-            }
-        }
-    }
 </script>
 
 </body>

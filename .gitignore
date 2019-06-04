@@ -10,3 +10,5 @@ db.sqlite3
 /file/aws.py
 venv
 */migrations
+envs_dev.json
+envs.json

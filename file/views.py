@@ -101,31 +101,95 @@ class FileCreateApi(APIView):
                 tmp.save()
                 tmp = tmp.parent
             uploadid = create_multipart_upload(str(request.user.id), serializer.data['path'])
-            #url = get_upload_url(str(request.user.id), serializer.data['path'])
-            urls = get_upload_part_url(str(request.user.id), serializer.data['path'], size, uploadid, 5*1024*1024*1024)
+            url = get_upload_url(str(request.user.id), serializer.data['path'])
+            result['item'] = serializer.data
+            result['uploadid'] = uploadid
+            result['url'] = url
+
+            return Response(result, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class FileCreateStartApi(APIView):
+    permission_classes = (IsAuthenticated, )
+
+    def post(self, request):
+        result = {}
+        try:
+            name = request.data['name']
+            path = request.data['path']
+            size = request.data['size']
+            filepath = path + name
+            directory = File.objects.get(owner=request.user, path=path)
+
+        except File.DoesNotExist:
+            return Response({"status": "404", "error": "Parent Not Found"}, status=status.HTTP_404_NOT_FOUND)
+        test = File.objects.filter(owner=request.user, parent=directory, name=name, is_directory=False)
+        if len(test)>0:
+            return Response({"status": "400", "error": "Already Exist"}, status=status.HTTP_400_BAD_REQUEST)
+        serializer = FileSerializer(data={'name':name, 'path':filepath, 'size':size})
+        if(serializer.is_valid()):
+            uploadid = create_multipart_upload(str(request.user.id), serializer.data['path'])
+            urls = get_upload_part_url(str(request.user.id), serializer.data['path'], size, uploadid,
+                                       5 * 1024 * 1024 * 1024)
             result['item'] = serializer.data
             result['uploadid'] = uploadid
             result['url'] = urls
 
-            return Response(result, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(result, status=status.HTTP_200_OK)
 
 
 class FileCreateCompleteApi(APIView):
     permission_classes = (IsAuthenticated, )
 
     def post(self, request):
+        print(request.data)
+        result = {}
+        try:
+            name = request.data['name']
+            path = request.data['path']
+            size = request.data['size']
+            UploadId = request.data['uploadid']
+            MultipartUpload = json.loads(request.data['items'])
+            MultipartUpload['Parts'] = sorted(MultipartUpload['Parts'], key=lambda k: k['PartNumber'])
+            filepath = path + name
+            directory = File.objects.get(owner=request.user, path=path)
+
+        except File.DoesNotExist:
+            return Response({"status": "404", "error": "Parent Not Found"}, status=status.HTTP_404_NOT_FOUND)
+        test = File.objects.filter(owner=request.user, parent=directory, name=name, is_directory=False)
+        if len(test)>0:
+            return Response({"status": "400", "error": "Already Exist"}, status=status.HTTP_400_BAD_REQUEST)
+        serializer = FileSerializer(data=request.data)
+
+        if(serializer.is_valid()):
+            serializer.save(owner=request.user, parent=directory, is_directory=False, size=size, path=filepath)
+
+            request.user.cur_size = request.user.cur_size+int(size)
+            request.user.save()
+            tmp = directory
+            while(not tmp == None):
+                tmp.size = tmp.size+int(size)
+                tmp.save()
+                tmp = tmp.parent
+            complete_multipart_upload(str(request.user.id), filepath, UploadId, MultipartUpload)
+            result['item'] = serializer.data
+
+            return Response(result, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class FileCreateAbortApi(APIView):
+    permission_classes = (IsAuthenticated, )
+
+    def post(self, request):
         name = request.data['name']
         path = request.data['path']
         UploadId = request.data['uploadid']
-        MultipartUpload = json.loads(request.data['items'])
-        MultipartUpload['Parts'] = sorted(MultipartUpload['Parts'], key=lambda k: k['PartNumber'])
-        print("OOOOOOOOOOOOOOOOOOOOOOOOOO111OO", MultipartUpload)
-        filepath = path+name
-        complete_multipart_upload(str(request.user.id), filepath, UploadId, MultipartUpload)
+        filepath = path + name
 
-        return Response({"status": "complete"})
-
+        abort_multipart_upload(str(request.user.id), filepath, UploadId)
+        return Response({"status": "200", "message": "abort completed"}, status=status.HTTP_200_OK)
 
 
 class FileDeleteApi(APIView):
