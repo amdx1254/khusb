@@ -59,7 +59,6 @@
             <rocket>
                 <div id="rocket">
                     <img src="{% static 'css/main_image/rocket.png' %}" style="width:50px;height:50px">
-
                     <a href="/logout/" class="font">로그아웃</a>
                 </div>
             </rocket>
@@ -84,8 +83,15 @@
     <path>
         <p>/HOME{{ path }}</p>
     </path>
+
     <main>
+        <ul class="contextmenu">
+          <li><a id="#uploadModal" data-toggle="modal" data-target="#uploadModal">파일 업로드</a></li>
+          <li><a id="#createDirectoryModal" data-toggle="modal" data-target="#createDirectoryModal">폴더 생성</a></li>
+        </ul>
+
         <table class="table" id="Table">
+
             <tr>
                 <th><input type="checkbox" id="allCheck"/></th>
                 <th>파일명&nbsp;<img class="sort-icon" src="{% static 'css/main_image/sort.png' %}" onclick="sortTable(0)">
@@ -136,6 +142,8 @@
             Contact information: hyunjin.gmail.com, woojin.gmail.com, yerin.gmail.com, myungho.gmail.com</p>
     </footer>
 </div>
+
+
 <div id="uploadModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="uploadModal" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
