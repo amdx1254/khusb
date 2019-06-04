@@ -15,7 +15,7 @@
 </head>
 <body>
 <input type="hidden" id="token" name="token" value="{{ token }}">
-\<input type="hidden" id="path" name="path" value="{{ path }}">
+<input type="hidden" id="path" name="path" value="{{ path }}">
 <div class="main_page">
     <nav>
         <div class="nav">
@@ -47,6 +47,9 @@
 
             <directory>
                 <ul>
+                    <li><a id="#uploadModal" data-toggle="modal" data-target="#uploadModal">업로드</a></li>
+                    <li><a id="#createDirectoryModal" data-toggle="modal" data-target="#createDirectoryModal">폴더생성</a></li>
+                    <li><a id="removeItem" class="delete" hidden>삭제</a></li>
                     <li><a href="#stars">즐겨찾기</a></li>
                     <li><a href="#recent">최근 수정한 파일</a></li>
                     <li><a href="#added">최근 추가한 파일</a></li>
@@ -84,6 +87,7 @@
     <main>
         <table class="table" id="Table">
             <tr>
+                <th><input type="checkbox" id="allCheck"/></th>
                 <th>파일명&nbsp;<img class="sort-icon" src="{% static 'css/main_image/sort.png' %}" onclick="sortTable(0)">
                 </th>
                 <th>수정한 시간&nbsp;<img class="sort-icon" src="{% static 'css/main_image/sort.png' %}"
@@ -94,7 +98,8 @@
             </tr>
             {% if path != '/' %}
                 <tr class="hover">
-                    <td><a class="folder" href="/list{{ parent }}">..</a></td>
+                    <td></td>
+                    <td style="text-align: left;"><a class="file" href="/list{{ parent }}" >..</a></td>
                     <td>{{ item.modified }}</td>
                     <td>folder</td>
                     <td>★</td>
@@ -102,9 +107,9 @@
             {% endif %}
             {% for item in items %}
                 {% if item.is_directory %}
-
                     <tr class="hover">
-                        <td><a class="folder" href="/list{{ item.path }}">{{ item.name }}/</a></td>
+                        <td><input type="checkbox" class="check" hidden="false"/></td>
+                        <td style="text-align: left;"><a class="file" href="/list{{ item.path }}">{{ item.name }}/</a></td>
                         <td>{{ item.modified }}</td>
                         <td>folder</td>
                         <td>★</td>
@@ -114,7 +119,8 @@
             {% for item in items %}
                 {% if not item.is_directory %}
                     <tr class="hover">
-                        <td><a class="file" href="/download{{ item.path }}">{{ item.name }}</a></td>
+                        <td><input type="checkbox" class="check" hidden="false"/></td>
+                        <td style="text-align: left;"><a class="file" href="/download{{ item.path }}">{{ item.name }}</a></td>
                         <td>{{ item.modified }}</td>
                         <td>file</td>
                         <td>☆</td>
@@ -123,9 +129,7 @@
             {% endfor %}
 
         </table>
-        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#uploadModal">업로드</button>
-        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#createDirectoryModal">폴더생성
-        </button>
+
     </main>
     <footer>
         <p>Cloud Computing KHUSB team<br>
@@ -172,6 +176,29 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
                 <button type="button" class="btn btn-primary" id="createBtn">Create</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="deleteModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="deleteModal" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">삭제하시겠습니까?</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="deleteitems">
+                    <table class="table" id="uploadeditem">
+
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="deleteBtn">Delete</button>
             </div>
         </div>
     </div>

@@ -4,7 +4,7 @@ var uploadid;
 var item = {'Parts': []};
 var finished = 0;
 var uploaded_size = [];
-
+var checked_items = [];
 $(document).ready(function () {
     var token = document.getElementById("token").value
     currentDirId = document.getElementById("path").value
@@ -161,6 +161,27 @@ function upload_file(url, filedata, chunk_id, len_url, len_file, file_num) {
         }
     }
 }
+var removed = 0;
+function remove_file(items, file_len, file_num) {
+        $.ajax({
+            method: "POST",
+            data: {
+                'path': currentDirId + items[file_num]
+            },
+            url: '/api/delete/',
+            success: function (data) {
+                removed++;
+                $("#removed"+file_num).html("deleted");
+                if(removed == file_len)
+                    location.reload();
+            },
+            error: function (data) {
+                alert("An error occured, please try again later")
+            }
+        });
+
+
+}
 
 $(document).on('click', '#uploadBtn', async function () {
     make_upload($("#uploadInput")[0].files.length, 0);
@@ -190,4 +211,66 @@ $(document).on('change', '#uploadInput', function() {
         html += "<tr class=\"hover\"><td style=\"text-align: left;\">"+files[i].name+"</td><td><progress max=\"100\" value=\"0\" id=\"uploadProgress"+i+"\"></progress></td><td style='text-align: left;'><span id='size"+i+"'>0/"+files[i].size+"</span></td></tr>";
     }
     $("#uploadeditem").html(html);
+});
+
+$(document).on('mouseover','.hover', function() {
+    $(this).find(".check").attr("hidden",false);
+})
+
+$(document).on('mouseout','.hover', function() {
+    var checked =  $(this).find(".check").prop('checked');
+    if(!checked)
+        $(this).find(".check").attr("hidden",true);
+})
+
+$(document).on('change','.check',function() {
+
+    var filename = $(this).closest('.hover').find('.file').html();
+    var checked = $(this).prop('checked');  // checked 상태 (true, false)
+
+    if(checked)
+    {
+        checked_items.push(filename);
+        $(".delete").attr("hidden",false);
+         $(this).attr("hidden",false)
+    }
+    else
+    {
+        $(this).attr("hidden",true)
+        var index = checked_items.indexOf(filename);
+        if(index > -1)
+            checked_items.splice(index, 1);
+        if(checked_items.length==0)
+            $(".delete").attr("hidden",true);
+    }
+});
+
+
+$(document).on('click','#allCheck',function() {
+
+    var checked = $(this).prop('checked');  // checked 상태 (true, false)
+
+    if(checked)
+        $("input[type=checkbox]").prop("checked",true).change();
+    else
+        $("input[type=checkbox]").prop("checked",false).change();
+});
+
+$(document).on('click','#removeItem', function() {
+    $('#deleteModal').modal();
+    var html="";
+    for(var i=0;i<checked_items.length;i++) {
+        html += "<tr class=\"hover\"><td style=\"text-align: left;\">"+checked_items[i]+"</td><td style='text-align: left;'><span id='removed"+i+"'></span></td></tr>";
+    }
+    $('#deleteModal').find("#uploadeditem").html(html);
+
+});
+
+$(document).on('click','#deleteBtn', function() {
+    var path;
+    var items = checked_items;
+    removed = 0;
+    for(var i = 0; i<items.length;i++) {
+        remove_file(items, items.length, i);
+    }
 });
