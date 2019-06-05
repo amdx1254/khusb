@@ -161,7 +161,7 @@ li a:hover {
   grid-template-areas: "logo logo logo"
                        "search space load";
   grid-template-rows: 60% 40%;
-  grid-template-columns: 600px 1fr 300px;
+  grid-template-columns: 600px 1fr 400px;
 }
 
 .header > logo {
@@ -292,4 +292,8 @@ a.font{
   padding: 0 0 0;
   border : 0;
   float: left;
+}
+
+#star {
+  font-size: 18px;
 }

@@ -67,6 +67,12 @@ $(document).ready(function(){
   });
 });
 
+function like(){
+    if(document.getElementById("star").style.color == "black")
+        document.getElementById("star").style.color = "orange";
+    else
+        document.getElementById("star").style.color = "black";
+}
 
 function sortTable(n) {
     var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;

@@ -14,7 +14,7 @@
     <script src='{% static 'js/main.js' %}'></script>
 
 </head>
-<body>
+<body oncontextmenu='return false' onselectstart='return false' ondragstart='return false'>
 <input type="hidden" id="token" name="token" value="{{ token }}">
 <input type="hidden" id="path" name="path" value="{{ path }}">
 <div class="main_page">
@@ -64,6 +64,7 @@
             <space></space>
             <load>
                 <ul class="folder_menu">
+                    <li><a id="#downloadModal" data-toggle="modal" data-target="#downloadModal">다운로드</a></li>
                     <li><a id="#uploadModal" data-toggle="modal" data-target="#uploadModal">업로드</a></li>
                     <li><a id="#createDirectoryModal" data-toggle="modal" data-target="#createDirectoryModal">폴더생성</a></li>
                     <li><a id="removeItem" class="delete" hidden>삭제</a></li>
@@ -100,7 +101,7 @@
                     <td style="text-align: left;"><a class="file" href="/list{{ parent }}" >..</a></td>
                     <td>{{ item.modified }}</td>
                     <td>folder</td>
-                    <td>★</td>
+                    <td id="star" onclick="like()" style="cursor:default">★</td>
                 </tr>
             {% endif %}
             {% for item in items %}
@@ -110,7 +111,7 @@
                         <td style="text-align: left;"><a class="file" href="/list{{ item.path }}">{{ item.name }}/</a></td>
                         <td>{{ item.modified }}</td>
                         <td>folder</td>
-                        <td>★</td>
+                        <td id="star" onclick="like()" style="cursor:default">★</td>
                     </tr>
                 {% endif %}
             {% endfor %}
@@ -121,7 +122,7 @@
                         <td style="text-align: left;"><a class="file" href="/download{{ item.path }}">{{ item.name }}</a></td>
                         <td>{{ item.modified }}</td>
                         <td>file</td>
-                        <td>☆</td>
+                        <td id="star" onclick="like()" style="cursor:default">★</td>
                     </tr>
                 {% endif %}
             {% endfor %}
@@ -203,6 +204,8 @@
         </div>
     </div>
 </div>
+
+    
 
 </body>
 </html>
