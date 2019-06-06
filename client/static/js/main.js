@@ -69,6 +69,24 @@ $(document).ready(function () {
     });
 });
 
+function byteTosize(byte){
+    var result = byte + "Byte";
+    if(byte > 1024 && byte < 1024*1024){
+        result = byte/1024;
+        result = result.toFixed(2);
+        result = result + "KB";
+    } else if(byte >= 1024*1024 && byte < 1024*1024*1024) {
+        result = byte/(1024*1024);
+        result = result.toFixed(2);
+        result = result + "MB";
+    } else if(byte >= 1024*1024*1024 && byte < 1024*1024*1024*1024) {
+        result = byte/(1024*1024*1024);
+        result = result.toFixed(2);
+        result = result + "GB";
+    }
+    return result;
+}
+
 function list_files() {
     $.ajax({
             method: "GET",
@@ -266,7 +284,9 @@ function upload_file(url, filedata, chunk_id, len_url, len_file, file_num) {
         }
         var per = sum * 100 / len_file;
         $('#uploadProgress'+file_num).val(per);
-        $('#size'+file_num).html(sum+'/'+len_file);
+        var display_len = byteTosize(len_file);
+        var display_sum = byteTosize(sum);
+        $('#size'+file_num).html(display_sum+'/'+display_len);
         if (e.lengthComputable) {
             //console.log(e.loaded / (e.total*len_url));
 
@@ -374,7 +394,9 @@ $(document).on('change', '#uploadInput', function(){
     var files = $("#uploadInput")[0].files;
     var html="";
     for(var i=0;i<files.length;i++) {
-        html += "<tr class=\"hover\"><td style=\"text-align: left;\">"+files[i].name+"</td><td><progress max=\"100\" value=\"0\" id=\"uploadProgress"+i+"\"></progress></td><td style='text-align: left;'><span id='size"+i+"'>0/"+files[i].size+"</span></td></tr>";
+        var size = files[i].size;
+        var display_size = byteTosize(size);
+        html += "<tr class=\"hover\"><td style=\"text-align: left;\">"+files[i].name+"</td><td><progress max=\"100\" value=\"0\" id=\"uploadProgress"+i+"\"></progress></td><td style='text-align: left;'><span id='size"+i+"'>0/"+display_size+"</span></td></tr>";
     }
     $("#uploadeditem").html(html);
 });
