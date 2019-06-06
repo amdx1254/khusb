@@ -67,12 +67,6 @@ $(document).ready(function(){
   });
 });
 
-function like(){
-    if(document.getElementById("star").style.color == "black")
-        document.getElementById("star").style.color = "orange";
-    else
-        document.getElementById("star").style.color = "black";
-}
 
 function sortTable(n) {
     var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
@@ -240,6 +234,26 @@ function remove_file(items, file_len, file_num) {
 
 }
 
+var downloaded = 0;
+function download_file(items, file_len, file_num) {
+        $.ajax({
+            method: "GET",
+            data: {
+                'path': currentDirId + items[file_num]
+            },
+            url: '/api/download/',
+            success: function (data) {
+                download++;
+                $("#downloaded"+file_num).html("downloaded");
+                if(downloaded == file_len)
+                    location.reload();
+            },
+            error: function (data) {
+                alert("An error occured, please try again later")
+            }
+        });
+}
+
 $(document).on('click', '#uploadBtn', async function () {
     make_upload($("#uploadInput")[0].files.length, 0);
 });
@@ -280,6 +294,19 @@ $(document).on('mouseout','.hover', function() {
         $(this).find(".check").attr("hidden",true);
 })
 
+var clicked = true;
+$(document).on('click','#star', function() {
+    if(clicked){
+        $(this).css('color', 'orange');
+        $(this).css('cursor', 'default');
+        clicked = false;
+    } else {
+        $(this).css('color', 'black');
+        $(this).css('cursor', 'default');
+        clicked = true;
+    }
+})
+
 $(document).on('change','.check',function() {
 
     var filename = $(this).closest('.hover').find('.file').html();
@@ -289,7 +316,8 @@ $(document).on('change','.check',function() {
     {
         checked_items.push(filename);
         $(".delete").attr("hidden",false);
-         $(this).attr("hidden",false)
+        $(".download").attr("hidden",false);
+        $(this).attr("hidden",false);
     }
     else
     {
@@ -297,8 +325,10 @@ $(document).on('change','.check',function() {
         var index = checked_items.indexOf(filename);
         if(index > -1)
             checked_items.splice(index, 1);
-        if(checked_items.length==0)
+        if(checked_items.length==0){
             $(".delete").attr("hidden",true);
+            $(".download").attr("hidden",true);
+        }
     }
 });
 
@@ -329,5 +359,24 @@ $(document).on('click','#deleteBtn', function() {
     removed = 0;
     for(var i = 0; i<items.length;i++) {
         remove_file(items, items.length, i);
+    }
+});
+
+$(document).on('click','#downloadItem', function() {
+    $('#downloadModal').modal();
+    var html="";
+    for(var i=0;i<checked_items.length;i++) {
+        html += "<tr class=\"hover\"><td style=\"text-align: left;\">"+checked_items[i]+"</td><td style='text-align: left;'><span id='downloaded"+i+"'></span></td></tr>";
+    }
+    $('#downloadModal').find("#uploadeditem").html(html);
+
+});
+
+$(document).on('click','#downloadBtn', function() {
+    var path;
+    var items = checked_items;
+    downloaded = 0;
+    for(var i = 0; i<items.length;i++) {
+        download_file(items, items.length, i);
     }
 });

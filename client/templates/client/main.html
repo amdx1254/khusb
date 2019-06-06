@@ -29,8 +29,6 @@
                 <p>
                     <a>{{ username }}</a>
                     &nbsp;&nbsp;
-                    <a href="#settings"><img src="{% static 'css/main_image/config.png' %}"
-                                             style="width:20px;height:20px;"></a>
                 </p>
             </id>
             <directory>
@@ -64,7 +62,7 @@
             <space></space>
             <load>
                 <ul class="folder_menu">
-                    <li><a id="#downloadModal" data-toggle="modal" data-target="#downloadModal">다운로드</a></li>
+                    <li><a id="downloadItem" class="download" hidden>다운로드</a></li>
                     <li><a id="#uploadModal" data-toggle="modal" data-target="#uploadModal">업로드</a></li>
                     <li><a id="#createDirectoryModal" data-toggle="modal" data-target="#createDirectoryModal">폴더생성</a></li>
                     <li><a id="removeItem" class="delete" hidden>삭제</a></li>
@@ -78,6 +76,7 @@
 
     <main>
         <ul class="contextmenu">
+          <li><a id="downloadItem" class="download" hidden>다운로드</a></li>
           <li><a id="#uploadModal" data-toggle="modal" data-target="#uploadModal">업로드</a></li>
           <li><a id="#createDirectoryModal" data-toggle="modal" data-target="#createDirectoryModal">폴더생성</a></li>
           <li><a id="removeItem" class="delete" hidden>삭제</a></li>
@@ -101,7 +100,7 @@
                     <td style="text-align: left;"><a class="file" href="/list{{ parent }}" >..</a></td>
                     <td>{{ item.modified }}</td>
                     <td>folder</td>
-                    <td id="star" onclick="like()" style="cursor:default">★</td>
+                    <td id="star" style="cursor:default">★</td>
                 </tr>
             {% endif %}
             {% for item in items %}
@@ -111,7 +110,7 @@
                         <td style="text-align: left;"><a class="file" href="/list{{ item.path }}">{{ item.name }}/</a></td>
                         <td>{{ item.modified }}</td>
                         <td>folder</td>
-                        <td id="star" onclick="like()" style="cursor:default">★</td>
+                        <td id="star" style="cursor:default">★</td>
                     </tr>
                 {% endif %}
             {% endfor %}
@@ -122,7 +121,7 @@
                         <td style="text-align: left;"><a class="file" href="/download{{ item.path }}">{{ item.name }}</a></td>
                         <td>{{ item.modified }}</td>
                         <td>file</td>
-                        <td id="star" onclick="like()" style="cursor:default">★</td>
+                        <td id="star" style="cursor:default">★</td>
                     </tr>
                 {% endif %}
             {% endfor %}
@@ -135,7 +134,30 @@
             Contact information: hyunjin.gmail.com, woojin.gmail.com, yerin.gmail.com, myungho.gmail.com</p>
     </footer>
 </div>
+    
+<div id="downloadModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="downloadModal" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">다운로드하시겠습니까?</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="downloaditems">
+                    <table class="table" id="uploadeditem">
 
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="downloadBtn">Download</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 <div id="uploadModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="uploadModal" aria-hidden="true">
     <div class="modal-dialog modal-lg">
