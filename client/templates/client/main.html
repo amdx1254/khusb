@@ -26,40 +26,10 @@
             <th>중요&nbsp;<img class="sort-icon" src="{% static 'css/main_image/sort.png' %}" onclick="sortTable(2)">
             </th>
         </tr>
-        {% if path != '/' %}
-            <tr class="hover">
-                <td></td>
-                <td style="text-align: left;"><a class="file" href="/list{{ parent }}" >..</a></td>
-                <td>{{ item.modified }}</td>
-                <td>folder</td>
-                <td id="star" style="cursor:default">★</td>
-            </tr>
-        {% endif %}
-        {% for item in items %}
-            {% if item.is_directory %}
-                <tr class="hover">
-                    <td><input type="checkbox" class="check" hidden="false"/></td>
-                    <td style="text-align: left;"><a class="file" href="/list{{ item.path }}">{{ item.name }}/</a></td>
-                    <td>{{ item.modified }}</td>
-                    <td>folder</td>
-                    <td id="star" style="cursor:default">★</td>
-                </tr>
-            {% endif %}
-        {% endfor %}
-        {% for item in items %}
-            {% if not item.is_directory %}
-                <tr class="hover">
-                    <td><input type="checkbox" class="check" hidden="false"/></td>
-                    <td style="text-align: left;"><a class="file" href="/download{{ item.path }}">{{ item.name }}</a></td>
-                    <td>{{ item.modified }}</td>
-                    <td>file</td>
-                    <td id="star" style="cursor:default">★</td>
-                </tr>
-            {% endif %}
-        {% endfor %}
+        <tbody id="items">
+        </tbody>
 
-    <tbody id="items">
-    </tbody>
+
     </table>
 
 </main>
