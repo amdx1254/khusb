@@ -369,7 +369,8 @@ $(document).on('click', '#createBtn', async function () {
     });
 });
 
-$(document).on('change', '#uploadInput', function() {
+$(document).on('change', '#uploadInput', function(){
+
     var files = $("#uploadInput")[0].files;
     var html="";
     for(var i=0;i<files.length;i++) {
@@ -471,7 +472,7 @@ $(document).on('click','#removeItem', function() {
     for(var i=0;i<checked_items.length;i++) {
         html += "<tr class=\"hover\"><td style=\"text-align: left;\">"+checked_items[i]+"</td><td style='text-align: left;'><span id='removed"+i+"'></span></td></tr>";
     }
-    $('#deleteModal').find("#uploadeditem").html(html);
+    $('#deleteModal').find("#deleteditem").html(html);
 
 });
 
