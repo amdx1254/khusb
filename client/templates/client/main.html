@@ -1,234 +1,67 @@
+{% extends 'client/base.html' %}
 {% load staticfiles %}
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge, chrome=1">
-    <title> KHUSB </title>
-    <link rel="stylesheet" href="//unpkg.com/bootstrap@4/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" href="{% static 'css/main.css' %}" type="text/css"/>
-    
-    <script src='//unpkg.com/jquery@3/dist/jquery.min.js'></script>
-    <script src='//unpkg.com/popper.js@1/dist/umd/popper.min.js'></script>
-    <script src='//unpkg.com/bootstrap@4/dist/js/bootstrap.min.js'></script>
-    <script src='{% static 'js/main.js' %}'></script>
 
-</head>
-<body oncontextmenu='return false' onselectstart='return false' ondragstart='return false'>
-<input type="hidden" id="token" name="token" value="{{ token }}">
-<input type="hidden" id="path" name="path" value="{{ path }}">
-<input type="hidden" id="parent" name="parent" value="{{ parent }}">
-<div class="main_page">
-    <nav>
-        <div class="nav">
-            <profile_pic>
-                <div class="prof_pic">
-                    <img src="{% static 'css/main_image/dalgomi.png' %}">
-                </div>
-            </profile_pic>
-            <id>
-                <p>
-                    <a>{{ username }}</a>
-                    &nbsp;&nbsp;
-                </p>
-            </id>
-            <directory>
-                <ul>
-                    
-                    <li><a href="#stars">즐겨찾기</a></li>
-                    <li><a href="#recent">최근 수정한 파일</a></li>
-                    <li><a href="#added">최근 추가한 파일</a></li>
-                </ul>
-            </directory>
+{% block content %}
+<path>
+    <p>/HOME{{ path }}</p>
+</path>
 
-            <rocket>
-                <div id="rocket">
-                    <img src="{% static 'css/main_image/rocket.png' %}" style="width:50px;height:50px">
-                    <a href="/logout/" class="font">로그아웃</a>
-                </div>
-            </rocket>
+<main>
+    <ul class="contextmenu">
+      <li><a id="downloadItem" class="download" hidden>다운로드</a></li>
+      <li><a id="#uploadModal" data-toggle="modal" data-target="#uploadModal">업로드</a></li>
+      <li><a id="#createDirectoryModal" data-toggle="modal" data-target="#createDirectoryModal">폴더생성</a></li>
+      <li><a id="removeItem" class="delete" hidden>삭제</a></li>
+    </ul>
 
-        </div>
-    </nav>
-    <header>
-        <div class="header">
-            <logo>
-                <p>KHUSB</p>
-            </logo>
-            <search>
-                <input type="text" name="search" id="search" placeholder="Search..">
-            </search>
-            <space></space>
-            <load>
-                <ul class="folder_menu">
-                    <li><a id="downloadItem" class="download" hidden>다운로드</a></li>
-                    <li><a id="#uploadModal" data-toggle="modal" data-target="#uploadModal">업로드</a></li>
-                    <li><a id="#createDirectoryModal" data-toggle="modal" data-target="#createDirectoryModal">폴더생성</a></li>
-                    <li><a id="removeItem" class="delete" hidden>삭제</a></li>
-                </ul>
-            </load>
-        </div>
-    </header>
-    <path>
-        <p>/HOME{{ path }}</p>
-    </path>
+    <table class="table" id="Table">
 
-    <main>
-        <ul class="contextmenu">
-          <li><a id="downloadItem" class="download" hidden>다운로드</a></li>
-          <li><a id="#uploadModal" data-toggle="modal" data-target="#uploadModal">업로드</a></li>
-          <li><a id="#createDirectoryModal" data-toggle="modal" data-target="#createDirectoryModal">폴더생성</a></li>
-          <li><a id="removeItem" class="delete" hidden>삭제</a></li>
-        </ul>
-
-        <table class="table" id="Table">
-
-            <tr>
-                <th><input type="checkbox" id="allCheck"/></th>
-                <th>파일명&nbsp;<img class="sort-icon" src="{% static 'css/main_image/sort.png' %}" onclick="sortTable(0)">
-                </th>
-                <th>수정한 시간&nbsp;<img class="sort-icon" src="{% static 'css/main_image/sort.png' %}"
-                                     onclick="sortTable(1)"></th>
-                <th>파일 유형&nbsp;<img class="sort-icon" src="{% static 'css/main_image/sort.png' %}"/></th>
-                <th>중요&nbsp;<img class="sort-icon" src="{% static 'css/main_image/sort.png' %}" onclick="sortTable(2)">
-                </th>
+        <tr>
+            <th><input type="checkbox" id="allCheck"/></th>
+            <th>파일명&nbsp;<img class="sort-icon" src="{% static 'css/main_image/sort.png' %}" onclick="sortTable(0)">
+            </th>
+            <th>수정한 시간&nbsp;<img class="sort-icon" src="{% static 'css/main_image/sort.png' %}"
+                                 onclick="sortTable(1)"></th>
+            <th>파일 유형&nbsp;<img class="sort-icon" src="{% static 'css/main_image/sort.png' %}"/></th>
+            <th>중요&nbsp;<img class="sort-icon" src="{% static 'css/main_image/sort.png' %}" onclick="sortTable(2)">
+            </th>
+        </tr>
+        {% if path != '/' %}
+            <tr class="hover">
+                <td></td>
+                <td style="text-align: left;"><a class="file" href="/list{{ parent }}" >..</a></td>
+                <td>{{ item.modified }}</td>
+                <td>folder</td>
+                <td id="star" style="cursor:default">★</td>
             </tr>
-            {% if path != '/' %}
+        {% endif %}
+        {% for item in items %}
+            {% if item.is_directory %}
                 <tr class="hover">
-                    <td></td>
-                    <td style="text-align: left;"><a class="file" href="/list{{ parent }}" >..</a></td>
+                    <td><input type="checkbox" class="check" hidden="false"/></td>
+                    <td style="text-align: left;"><a class="file" href="/list{{ item.path }}">{{ item.name }}/</a></td>
                     <td>{{ item.modified }}</td>
                     <td>folder</td>
                     <td id="star" style="cursor:default">★</td>
                 </tr>
             {% endif %}
-            {% for item in items %}
-                {% if item.is_directory %}
-                    <tr class="hover">
-                        <td><input type="checkbox" class="check" hidden="false"/></td>
-                        <td style="text-align: left;"><a class="file" href="/list{{ item.path }}">{{ item.name }}/</a></td>
-                        <td>{{ item.modified }}</td>
-                        <td>folder</td>
-                        <td id="star" style="cursor:default">★</td>
-                    </tr>
-                {% endif %}
-            {% endfor %}
-            {% for item in items %}
-                {% if not item.is_directory %}
-                    <tr class="hover">
-                        <td><input type="checkbox" class="check" hidden="false"/></td>
-                        <td style="text-align: left;"><a class="file" href="/download{{ item.path }}">{{ item.name }}</a></td>
-                        <td>{{ item.modified }}</td>
-                        <td>file</td>
-                        <td id="star" style="cursor:default">★</td>
-                    </tr>
-                {% endif %}
-            {% endfor %}
+        {% endfor %}
+        {% for item in items %}
+            {% if not item.is_directory %}
+                <tr class="hover">
+                    <td><input type="checkbox" class="check" hidden="false"/></td>
+                    <td style="text-align: left;"><a class="file" href="/download{{ item.path }}">{{ item.name }}</a></td>
+                    <td>{{ item.modified }}</td>
+                    <td>file</td>
+                    <td id="star" style="cursor:default">★</td>
+                </tr>
+            {% endif %}
+        {% endfor %}
 
-        <tbody id="items">
-        </tbody>
-        </table>
+    <tbody id="items">
+    </tbody>
+    </table>
 
-    </main>
-    <footer>
-        <p>Cloud Computing KHUSB team<br>
-            Contact information: hyunjin.gmail.com, woojin.gmail.com, yerin.gmail.com, myungho.gmail.com</p>
-    </footer>
-</div>
-    
-<div id="downloadModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="downloadModal" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">다운로드하시겠습니까?</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <div id="downloaditems">
-                    <table class="table" id="uploadeditem">
+</main>
+{% endblock %}
 
-                    </table>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary" id="downloadBtn">Download</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div id="uploadModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="uploadModal" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Upload file</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <div id="uploaditems">
-                    <table class="table" id="uploadeditem">
-
-                    </table>
-                </div>
-                <input type="file" id="uploadInput" multiple style="margin-left: 3%;">
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary" id="uploadBtn">Upload</button>
-            </div>
-        </div>
-    </div>
-</div>
-<div id="createDirectoryModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="createDirectoryModal"
-     aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Create Directory</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <input type="text" name="directoryName" id="directoryName">
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary" id="createBtn">Create</button>
-            </div>
-        </div>
-    </div>
-</div>
-<div id="deleteModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="deleteModal" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">삭제하시겠습니까?</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <div id="deleteitems">
-                    <table class="table" id="uploadeditem">
-
-                    </table>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary" id="deleteBtn">Delete</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-    
-
-</body>
-</html>
