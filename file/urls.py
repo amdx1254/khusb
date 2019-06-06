@@ -5,6 +5,8 @@ urlpatterns = [
     path('create/', FolderCreateApi.as_view(), name="user-register"), # 회원가입 API 주소
     path('list/', FolderListApi.as_view()),
     path('list/<path:path>/', FolderListApi.as_view()),
+    path('search/',FileSearchApi.as_view()),
+    path('search/<path:path>/',FileSearchApi.as_view()),
     path('upload/', FileCreateApi.as_view()),
     path('upload_start/', FileCreateStartApi.as_view()),
     path('upload_complete/', FileCreateCompleteApi.as_view()),

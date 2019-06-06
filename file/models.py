@@ -21,3 +21,12 @@ class File(models.Model):
         types, _ = mimetypes.guess_type(self.name)
         self.type = types
 
+    def get_all_children(self, include_self=True):
+        r = []
+        if include_self:
+            r.append(self)
+        for c in File.objects.filter(parent=self):
+            _r = c.get_all_children(include_self=True)
+            if 0 < len(_r):
+                r.extend(_r)
+        return r
