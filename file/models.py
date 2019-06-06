@@ -13,6 +13,7 @@ class File(models.Model):
     is_directory = models.BooleanField(default=False)
     type = models.CharField(max_length=200, blank=True, null=True)
     path = models.CharField(max_length=50000)
+    favorite = models.BooleanField(default=False)
 
     def __str__(self):
         return self.path

@@ -70,7 +70,25 @@ class FolderListApi(APIView):
             ser = FileSerializer(file)
             result['items'].append(ser.data)
 
-        return Response(result)
+        return Response(result, status=status.HTTP_200_OK)
+
+
+class FavoriteListApi(APIView):
+    permission_classes = (IsAuthenticated, )
+
+    def get(self, request):
+        files = File.objects.filter(owner=request.user, favorite=True)
+        result = {}
+        result['available_size'] = request.user.max_size - request.user.cur_size
+        result['used_size'] = request.user.cur_size
+        result['offset'] = 0
+        result['username'] = request.user.username
+        result['items'] = []
+        for file in files:
+            ser = FileSerializer(file)
+            result['items'].append(ser.data)
+
+        return Response(result, status=status.HTTP_200_OK)
 
 
 class FileSearchApi(APIView):
@@ -363,6 +381,23 @@ class FileMoveApi(APIView):
             to_parent_object.save()
             move_object(str(request.user.id), request.data['from_path'], request.data['to_path'])
             serializer = FileSerializer(from_object)
+
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        except File.DoesNotExist:
+            return Response({"status": "404", "error": "Not Found"}, status=status.HTTP_404_NOT_FOUND)
+
+
+class FileFavoriteApi(APIView):
+    permission_classes = (IsAuthenticated, )
+
+    def post(self, request):
+        try:
+            object = File.objects.get(owner=request.user, path=request.data['path'])
+            object.favorite = not object.favorite
+            object.save()
+
+            serializer = FileSerializer(object)
 
             return Response(serializer.data, status=status.HTTP_200_OK)
 

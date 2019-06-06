@@ -6,7 +6,7 @@ var finished = 0;
 var uploaded_size = [];
 var checked_items = [];
 var parendDirId;
-
+var isfavorite = false;
 $(document).ready(function () {
     var token = document.getElementById("token").value
     currentDirId = document.getElementById("path").value
@@ -21,54 +21,52 @@ $(document).ready(function () {
 
 
 
-$(document).ready(function(){
-  //Show contextmenu:
-  $(document).contextmenu(function(e){
-    //Get window size:
-    var winWidth = $(document).width();
-    var winHeight = $(document).height();
-    //Get pointer position:
-    var posX = e.pageX;
-    var posY = e.pageY;
-    //Get contextmenu size:
-    var menuWidth = $(".contextmenu").width();
-    var menuHeight = $(".contextmenu").height();
-    //Security margin:
-    var secMargin = 10;
-    //Prevent page overflow:
-    if(posX + menuWidth + secMargin >= winWidth
-    && posY + menuHeight + secMargin >= winHeight){
-      //Case 1: right-bottom overflow:
-      posLeft = posX - menuWidth - secMargin + "px";
-      posTop = posY - menuHeight - secMargin + "px";
-    }
-    else if(posX + menuWidth + secMargin >= winWidth){
-      //Case 2: right overflow:
-      posLeft = posX - menuWidth - secMargin + "px";
-      posTop = posY + secMargin + "px";
-    }
-    else if(posY + menuHeight + secMargin >= winHeight){
-      //Case 3: bottom overflow:
-      posLeft = posX + secMargin + "px";
-      posTop = posY - menuHeight - secMargin + "px";
-    }
-    else {
-      //Case 4: default values:
-      posLeft = posX + secMargin + "px";
-      posTop = posY + secMargin + "px";
-    };
-    //Display contextmenu:
-    $(".contextmenu").css({
-      "left": posLeft,
-      "top": posTop
-    }).show();
-    //Prevent browser default contextmenu.
-    return false;
-  });
-  //Hide contextmenu:
-  $(document).click(function(){
-    $(".contextmenu").hide();
-  });
+$(document).ready(function () {
+    //Show contextmenu:
+    $(document).contextmenu(function (e) {
+        //Get window size:
+        var winWidth = $(document).width();
+        var winHeight = $(document).height();
+        //Get pointer position:
+        var posX = e.pageX;
+        var posY = e.pageY;
+        //Get contextmenu size:
+        var menuWidth = $(".contextmenu").width();
+        var menuHeight = $(".contextmenu").height();
+        //Security margin:
+        var secMargin = 10;
+        //Prevent page overflow:
+        if (posX + menuWidth + secMargin >= winWidth
+            && posY + menuHeight + secMargin >= winHeight) {
+            //Case 1: right-bottom overflow:
+            posLeft = posX - menuWidth - secMargin + "px";
+            posTop = posY - menuHeight - secMargin + "px";
+        } else if (posX + menuWidth + secMargin >= winWidth) {
+            //Case 2: right overflow:
+            posLeft = posX - menuWidth - secMargin + "px";
+            posTop = posY + secMargin + "px";
+        } else if (posY + menuHeight + secMargin >= winHeight) {
+            //Case 3: bottom overflow:
+            posLeft = posX + secMargin + "px";
+            posTop = posY - menuHeight - secMargin + "px";
+        } else {
+            //Case 4: default values:
+            posLeft = posX + secMargin + "px";
+            posTop = posY + secMargin + "px";
+        }
+        ;
+        //Display contextmenu:
+        $(".contextmenu").css({
+            "left": posLeft,
+            "top": posTop
+        }).show();
+        //Prevent browser default contextmenu.
+        return false;
+    });
+    //Hide contextmenu:
+    $(document).click(function () {
+        $(".contextmenu").hide();
+    });
 });
 
 function list_files() {
@@ -97,10 +95,16 @@ function load_files(value, files) {
     var name;
     var modified;
     var displayname;
-    if (currentDirId != "/") {
+    if (currentDirId != "/" || isfavorite) {
         html += "<tr class='hover'>";
         html += "<td></td>";
-        html += "<td style='text-align: left;'><a class='file' href='/list" + parendDirId + "'>..</a></td>";
+        if(isfavorite){
+            html += "<td style='text-align: left;'><a class='file' href='/list" + currentDirId + "'>..</a></td>";
+        } else
+        {
+            html += "<td style='text-align: left;'><a class='file' href='/list" + parendDirId + "'>..</a></td>";
+        }
+
         html += "<td></td>";
         html += "<td></td>\n";
         html += "</tr>";
@@ -121,7 +125,10 @@ function load_files(value, files) {
             html += "<td style='text-align: left;'><a class='file' href='/list" + path + "'>" + displayname + "</a></td>";
             html += "<td>" + dateToString(modified) + "</td>";
             html += "<td>folder</td>";
-            html += "<td id='star' style='cursor:default'>★</td>\n";
+            if(!files[i]['favorite'])
+                html += "<td id='star' style='cursor:default'>★</td>\n";
+            else
+                html += "<td id='star' style='cursor:default; color:orange;'>★</td>\n";
             html += "</tr>";
         }
     }
@@ -141,7 +148,10 @@ function load_files(value, files) {
             html += "<td style='text-align: left;'><a class='file' href='/download" + path + "'>" + displayname + "</a></td>";
             html += "<td>" + dateToString(modified) + "</td>";
             html += "<td>file</td>";
-            html += "<td id='star' style='cursor:default'>★</td>\n";
+            if(!files[i]['favorite'])
+                html += "<td id='star' style='cursor:default'>★</td>\n";
+            else
+                html += "<td id='star' style='cursor:default; color:orange;'>★</td>\n";
             html += "</tr>";
         }
 
@@ -378,18 +388,46 @@ $(document).on('mouseout','.hover', function() {
         $(this).find(".check").attr("hidden",true);
 })
 
-var clicked = true;
-$(document).on('click','#star', function() {
-    if(clicked){
+$(document).on('click', '#star', function () {
+    var name = $(this).parent().find(".file").html()
+    var result;
+    $.ajax({
+        method: "POST",
+        data: {
+            'path': currentDirId + name
+        },
+        url: '/api/favorite/',
+        success: function (data) {
+            result = data;
+        },
+        error: function (data) {
+            alert("An error occured, please try again later")
+        },
+        async: false
+    });
+    if (result['favorite']) {
         $(this).css('color', 'orange');
         $(this).css('cursor', 'default');
-        clicked = false;
     } else {
         $(this).css('color', 'black');
         $(this).css('cursor', 'default');
-        clicked = true;
     }
-})
+});
+
+$(document).on('click', '#stars', function () {
+    $.ajax({
+        method: "GET",
+        url: '/api/listfavorite/',
+        success: function (data) {
+            isfavorite = true;
+            load_files("",data['items']);
+        },
+        error: function (data) {
+            alert("An error occured, please try again later")
+        },
+        async: false
+    });
+});
 
 $(document).on('change','.check',function() {
 

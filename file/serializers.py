@@ -7,7 +7,7 @@ class FileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = File
-        fields = ('id', 'owner', 'parent', 'name', 'size', 'is_directory', 'type', 'path', 'modified')
+        fields = ('id', 'owner', 'parent', 'name', 'size', 'is_directory', 'type', 'path', 'modified', 'favorite')
 
     def get_type(self, obj):
         return obj.set_type()
