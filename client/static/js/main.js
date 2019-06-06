@@ -84,6 +84,11 @@ function list_files() {
     });
 }
 
+function dateToString(date) {
+    var year = date.substring(0, 10);
+    var time = date.substring(11,16);
+    return year + " " + time;
+}
 
 function load_files(value, files) {
     var html = "";
@@ -114,7 +119,7 @@ function load_files(value, files) {
             html += "<tr class='hover'>";
             html += "<td><input type='checkbox' class='check' hidden='false'/></td>";
             html += "<td style='text-align: left;'><a class='file' href='/list" + path + "'>" + displayname + "</a></td>";
-            html += "<td>" + modified + "</td>";
+            html += "<td>" + dateToString(modified) + "</td>";
             html += "<td>folder</td>";
             html += "<td id='start' onclick='like()' style='cursor:default'>★</td>\n";
             html += "</tr>";
@@ -134,7 +139,7 @@ function load_files(value, files) {
             html += "<tr class='hover'>";
             html += "<td><input type='checkbox' class='check' hidden='false'/></td>";
             html += "<td style='text-align: left;'><a class='file' href='/download" + path + "'>" + displayname + "</a></td>";
-            html += "<td>" + modified + "</td>";
+            html += "<td>" + dateToString(modified) + "</td>";
             html += "<td>file</td>";
             html += "<td id='start' onclick='like()' style='cursor:default'>★</td>\n";
             html += "</tr>";
