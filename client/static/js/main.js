@@ -99,7 +99,7 @@ function load_files(value, files) {
     var displayname;
     if (currentDirId != "/") {
         html += "<tr class='hover'>";
-        html += "<td><input type='checkbox' class='check' hidden='false'/></td>";
+        html += "<td></td>";
         html += "<td style='text-align: left;'><a class='file' href='/list" + parendDirId + "'>..</a></td>";
         html += "<td></td>";
         html += "<td></td>\n";
