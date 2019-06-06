@@ -110,25 +110,19 @@ WSGI_APPLICATION = 'dropbox.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases
-'''
+
 DATABASES = {
     'default':{
         'ENGINE':'django.db.backends.postgresql',
-        'NAME' : 'cckhusb',
+        'NAME' : 'cloudkhusb',
         'USER' : 'khusb',
         'PASSWORD' : '학수번호+khusb',
-        'HOST' : 'cckhusb.cxzbz1qhxcvg.us-east-1.rds.amazonaws.com', #aws일 경우:'rds 인스턴스 명'
+        'HOST' : 'cloudkhusb.cxzbz1qhxcvg.us-east-1.rds.amazonaws.com', #aws일 경우:'rds 인스턴스 명'
         'PORT' : '5432',
     }
 }
-'''
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-    }
-}
+
 
 # Password validation
 # https://docs.djangoproject.com/en/2.2/ref/settings/#auth-password-validators

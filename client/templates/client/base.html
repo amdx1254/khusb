@@ -7,7 +7,7 @@
     <title> KHUSB </title>
     <link rel="stylesheet" href="//unpkg.com/bootstrap@4/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="{% static 'css/main.css' %}" type="text/css"/>
-    
+
     <script src='//unpkg.com/jquery@3/dist/jquery.min.js'></script>
     <script src='//unpkg.com/popper.js@1/dist/umd/popper.min.js'></script>
     <script src='//unpkg.com/bootstrap@4/dist/js/bootstrap.min.js'></script>
@@ -34,7 +34,7 @@
             </id>
             <directory>
                 <ul>
-                    
+
                     <li><a href="#stars" id="stars">즐겨찾기</a></li>
                     <li><a href="#recent">최근 수정한 파일</a></li>
                     <li><a href="#added">최근 추가한 파일</a></li>
@@ -53,7 +53,7 @@
     <header>
         <div class="header">
             <logo>
-                <p>KHUSB</p>
+                <a href = "/list"><p>KHUSB</p></a>
             </logo>
             <search>
                 <input type="text" name="search" id="search" placeholder="Search..">
@@ -69,17 +69,17 @@
             </load>
         </div>
     </header>
-    
+
     {% block content %}
-  
-    
+
+
     {% endblock %}
     <footer>
         <p>Cloud Computing KHUSB team<br>
             Contact information: hyunjin.gmail.com, woojin.gmail.com, yerin.gmail.com, myungho.gmail.com</p>
     </footer>
 </div>
-    
+
 <div id="downloadModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="downloadModal" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -172,7 +172,7 @@
     </div>
 </div>
 
-    
+
 
 </body>
 </html>
