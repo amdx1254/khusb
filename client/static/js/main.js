@@ -5,14 +5,18 @@ var item = {'Parts': []};
 var finished = 0;
 var uploaded_size = [];
 var checked_items = [];
+var parendDirId;
+
 $(document).ready(function () {
     var token = document.getElementById("token").value
     currentDirId = document.getElementById("path").value
+    parendDirId = document.getElementById("parent").value
     $.ajaxSetup({
         headers: {
             'Authorization': 'Bearer ' + token
         }
     })
+    list_files();
 });
 
 
@@ -66,6 +70,86 @@ $(document).ready(function(){
     $(".contextmenu").hide();
   });
 });
+
+function list_files() {
+    $.ajax({
+            method: "GET",
+            url: '/api/list'+currentDirId,
+            success: function (data) {
+                 load_files('', data['items'])
+            },
+            error: function (data) {
+                alert("An error occured, please try again later")
+            }
+    });
+}
+
+function dateToString(date) {
+    var year = date.substring(0, 10);
+    var time = date.substring(11,16);
+    return year + " " + time;
+}
+
+function load_files(value, files) {
+    var html = "";
+
+    $("#items").html("")
+    var name;
+    var modified;
+    var displayname;
+    if (currentDirId != "/") {
+        html += "<tr class='hover'>";
+        html += "<td><input type='checkbox' class='check' hidden='false'/></td>";
+        html += "<td style='text-align: left;'><a class='file' href='/list" + parendDirId + "'>..</a></td>";
+        html += "<td></td>";
+        html += "<td></td>\n";
+        html += "</tr>";
+    }
+
+    for (var i = 0; i < files.length; i++) {
+        isDirectory = files[i]['is_directory'];
+        if (isDirectory) {
+            name = files[i]['name'];
+            modified = files[i]['modified'];
+            path = files[i]['path'];
+            if(value=="")
+                displayname = name + "/";
+            else
+                displayname = path;
+            html += "<tr class='hover'>";
+            html += "<td><input type='checkbox' class='check' hidden='false'/></td>";
+            html += "<td style='text-align: left;'><a class='file' href='/list" + path + "'>" + displayname + "</a></td>";
+            html += "<td>" + dateToString(modified) + "</td>";
+            html += "<td>folder</td>";
+            html += "<td id='star' style='cursor:default'>★</td>\n";
+            html += "</tr>";
+        }
+    }
+    for (var i = 0; i < files.length; i++) {
+        isDirectory = files[i]['is_directory'];
+        if (!isDirectory) {
+            name = files[i]['name'];
+            modified = files[i]['modified'];
+            path = files[i]['path'];
+            isDirectory = files[i]['is_directory'];
+            if(value=="")
+                displayname = name;
+            else
+                displayname = path;
+            html += "<tr class='hover'>";
+            html += "<td><input type='checkbox' class='check' hidden='false'/></td>";
+            html += "<td style='text-align: left;'><a class='file' href='/download" + path + "'>" + displayname + "</a></td>";
+            html += "<td>" + dateToString(modified) + "</td>";
+            html += "<td>file</td>";
+            html += "<td id='star' style='cursor:default'>★</td>\n";
+            html += "</tr>";
+        }
+
+    }
+
+
+    $("#items").html(html);
+}
 
 
 function sortTable(n) {
@@ -380,3 +464,26 @@ $(document).on('click','#downloadBtn', function() {
         download_file(items, items.length, i);
     }
 });
+
+$(document).on('input','#search', async function() {
+    if ($("#search").val() != "")
+    {
+        $.ajax({
+            method: "GET",
+            data: {
+                'name': $("#search").val()
+            },
+            url: '/api/search'+currentDirId,
+            success: function (data) {
+                 load_files($("#search").val(), data['items'])
+            },
+            error: function (data) {
+                alert("An error occured, please try again later")
+            }
+        });
+    } else {
+        list_files();
+    }
+
+})
+

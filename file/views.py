@@ -71,6 +71,40 @@ class FolderListApi(APIView):
         return Response(result)
 
 
+class FileSearchApi(APIView):
+    permission_classes = (IsAuthenticated, )
+
+    def get(self, request, path='/'):
+        if(path!='/'):
+            path='/'+path+'/'
+        try:
+            directory = File.objects.get(owner=request.user, path=path)
+            files = directory.get_all_children()
+            print("fuck")
+        except File.DoesNotExist:
+            return Response({"status": "404", "error": "Not Found"}, status=status.HTTP_404_NOT_FOUND)
+        result = {}
+        name = request.GET.get('name','')
+        type = request.GET.get('type','all')
+        sort = request.GET.get('sort','name')
+        print(path+name)
+        items = []
+        for file in files:
+            if(name in file.name):
+                result_item = FileSerializer(file)
+                items.append(result_item.data)
+        result['available_size'] = request.user.max_size - request.user.cur_size
+        result['used_size'] = request.user.cur_size
+        result['offset'] = 0
+        result['length'] = len(items)
+        result['name'] = name
+        result['sort'] = sort
+        result['items'] = items
+
+
+        return Response(result, status=status.HTTP_200_OK)
+
+
 class FileCreateApi(APIView):
     permission_classes = (IsAuthenticated, )
 
