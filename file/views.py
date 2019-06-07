@@ -110,7 +110,7 @@ class FileSearchApi(APIView):
         print(path+name)
         items = []
         for file in files:
-            if(name in file.name):
+            if(name.lower() in file.name.lower()):
                 result_item = FileSerializer(file)
                 items.append(result_item.data)
         result['available_size'] = request.user.max_size - request.user.cur_size
