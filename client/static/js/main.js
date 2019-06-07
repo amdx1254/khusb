@@ -112,7 +112,9 @@ function load_files(value, files) {
     $("#items").html("")
     var name;
     var modified;
-    var displayname;
+    var displayname
+    var path;
+    var isDirectory;
     if (currentDirId != "/" || isfavorite) {
         html += "<tr class='hover'>";
         html += "<td></td>";
@@ -147,6 +149,7 @@ function load_files(value, files) {
                 html += "<td id='star' style='cursor:default'>★</td>\n";
             else
                 html += "<td id='star' style='cursor:default; color:orange;'>★</td>\n";
+            html += "<td id='path' hidden>" + files[i]['path'] + "</td>";
             html += "</tr>";
         }
     }
@@ -170,6 +173,7 @@ function load_files(value, files) {
                 html += "<td id='star' style='cursor:default'>★</td>\n";
             else
                 html += "<td id='star' style='cursor:default; color:orange;'>★</td>\n";
+            html += "<td id='path' hidden>" + files[i]['path'] + "</td>";
             html += "</tr>";
         }
 
@@ -331,7 +335,7 @@ function remove_file(items, file_len, file_num) {
         $.ajax({
             method: "POST",
             data: {
-                'path': currentDirId + items[file_num]
+                'path': items[file_num]
             },
             url: '/api/delete/',
             success: function (data) {
@@ -454,7 +458,7 @@ $(document).on('click', '#stars', function () {
 
 $(document).on('change','.check',function() {
 
-    var filename = $(this).closest('.hover').find('.file').html();
+    var filename = $(this).closest('.hover').find('#path').html();
     var checked = $(this).prop('checked');  // checked 상태 (true, false)
 
     if(checked)
