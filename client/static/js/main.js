@@ -261,7 +261,7 @@ function load_files_modal(files, cur_path, parent_path, method) {
 
     if (cur_path != "/") {
         html += "<tr class='hover'>";
-        html += "<td style='text-align: left;'><a class='file' onclick=\"list_modal('"+parent_path+"');\" style=\"cursor: pointer;\">..</a></td>";
+        html += "<td style='text-align: left;'><a class='file' onclick=\"list_modal('"+parent_path+"','"+method+"');\" style=\"cursor: pointer;\">..</a></td>";
         html += "</tr>";
     }
     for (var i = 0; i < files.length; i++) {
@@ -270,7 +270,7 @@ function load_files_modal(files, cur_path, parent_path, method) {
             name = files[i]['name'];
             path = files[i]['path']
             html += "<tr class='hover'>";
-            html += "<td style='text-align: left;'><a class='file' id='file"+ i + "'style=\"cursor: pointer;\" onclick=\"list_modal('"+path+"');\">" + name + "/</a></td>";
+            html += "<td style='text-align: left;'><a class='file' id='file"+ i + "'style=\"cursor: pointer;\" onclick=\"list_modal('"+path+"','"+method+"');\">" + name + "/</a></td>";
             html += "</tr>";
         }
     }
