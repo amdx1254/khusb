@@ -115,6 +115,18 @@ def shareView(request):
         return render(request, 'client/share.html', r)
 
 
+@csrf_exempt
+def shareDoneView(request):
+    if(not check_auth(request)):
+        return redirect('user-login')
+    if(request.method == 'GET'):
+        r = {}
+        r['path'] = "/Shared Folder"
+        r['token'] = request.session['token']
+        r['username'] = request.user.username
+        return render(request, 'client/listsharedone.html', r)
+
+
 def DownloadView(request, path):
     path = '/'+path
     if(not check_auth(request)):

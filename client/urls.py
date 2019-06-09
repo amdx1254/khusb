@@ -8,6 +8,7 @@ urlpatterns = [
     path('list/', views.listView, name='list-view'),
     path('list/<path:path>/', views.listView, name='list-view'),
     path('listshare/', views.shareView),
+    path('listdoshare/', views.shareDoneView),
     path('logout/', views.LogoutView),
     path('download/',views.DownloadView),
     path('download/<path:path>/', views.DownloadView),

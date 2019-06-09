@@ -80,7 +80,7 @@ class FolderListApi(APIView):
             else:
                 if(file.path != '/' and not file.is_directory):
                     result['items'].append(ser.data)
-        print(len(result['items']))
+        print((result['items']))
         return Response(result, status=status.HTTP_200_OK)
 
 
@@ -383,8 +383,14 @@ class ShareApi(APIView):
 
     def post(self, request):
         try:
+
             object = File.objects.get(owner=request.user, path=request.data['path'])
             user = User.objects.get(email=request.data['email'])
+            if(user == request.user):
+                return Response({"status": "400", "error": "Cannot share to owner"}, status=status.HTTP_400_BAD_REQUEST)
+            shared = Share.objects.filter(owner=user, file=object)
+            if(len(shared)>0):
+                return Response({"status": "400", "error": "Already Shared"}, status=status.HTTP_400_BAD_REQUEST)
 
             serializer = ShareSerializer(data={"file": object.id, "read": True, "write": False})
 
@@ -457,3 +463,53 @@ class DownloadShareApi(APIView):
                 return Response({"status": "404", "error": "FIle Not Found"}, status=status.HTTP_404_NOT_FOUND)
         except File.DoesNotExist:
             return Response({"status": "404", "error": "FIle Not Found"}, status=status.HTTP_404_NOT_FOUND)
+
+
+class ListDoShareApi(APIView):
+    permission_classes = (IsAuthenticated, )
+
+    def get(self, request):
+        result = {}
+        items = []
+        result['parent'] = ''
+        files = File.objects.filter(owner=request.user, share__in=Share.objects.all())
+        shares = Share.objects.all()
+        for share in shares:
+            try:
+                file = File.objects.get(owner=request.user, id=share.file.id)
+                item = FileSerializer(file)
+                data = item.data
+                data['shared_id'] = share.id
+                data['shared_user'] = share.owner.username
+                items.append(data)
+            except File.DoesNotExist:
+                pass
+
+
+
+        result['available_size'] = request.user.max_size - request.user.cur_size
+        result['used_size'] = request.user.cur_size
+        result['offset'] = 0
+        result['username'] = request.user.username
+        result['length'] = len(items)
+        result['items'] = items
+        print(result)
+
+        return Response(result, status=status.HTTP_200_OK)
+
+
+class ShareDeleteApi(APIView):
+    permission_classes = (IsAuthenticated, )
+
+    def post(self, request):
+        try:
+            object = Share.objects.get(id=request.data.get('id',''))
+
+            serializer = ShareSerializer(object)
+            object.delete()
+
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except File.DoesNotExist:
+            return Response({"status": "404", "error": "File Not Found"}, status=status.HTTP_404_NOT_FOUND)
+        except Share.DoesNotExist:
+            return Response({"status": "404", "error": "This File is not Shared"}, status=status.HTTP_404_NOT_FOUND)

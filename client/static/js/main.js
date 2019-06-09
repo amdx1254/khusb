@@ -7,6 +7,7 @@ var uploaded_size = [];
 var parentPath;
 var isfavorite = false;
 var view_share = false;
+var view_share_done = false;
 var view_recent = false;
 var available_size;
 var used_size
@@ -119,6 +120,7 @@ function list_files(recently, path) {
     var url = '/api/list'+path;
     var html = "/"+"<a style=\"cursor: pointer;\" onclick=\"list_files('','"+ppath+"'); window.history.pushState('', '', '/list" + ppath + "');\">HOME</a>" + "/";
     view_share = false;
+    view_share_done = false;
     if(recently != ""){
         url = "/api/list?recently="+recently;
         window.history.pushState("", "", '/list/');
@@ -169,10 +171,36 @@ function list_files(recently, path) {
 
 function list_share() {
     view_recent = false;
+    view_share_done = false;
     var id = getParameterByName('id');
     var loc = '/api/listshare/';
     if(id != null)
         loc = loc+"?id="+id;
+    $.ajax({
+        method: "GET",
+        url: loc,
+        success: function (data) {
+            parentPath = data['parent'];
+            file_list = data['items'];
+            load_files("",file_list);
+            available_size = data['available_size'];
+            used_size = data['used_size'];
+
+            printsize();
+        },
+        error: function (data) {
+            goMainPage();
+            showSnackBar("An error occured, please try again later")
+        },
+        async: false
+    });
+}
+
+function list_do_share() {
+    view_recent = false;
+    view_share = false;
+    view_share_done = true;
+    var loc = '/api/listdoshare/';
     $.ajax({
         method: "GET",
         url: loc,
@@ -208,21 +236,21 @@ function load_files(value, files, cur_path) {
     var displayname
     var path;
     var isDirectory;
-    var file_id;
-    if (cur_path != "/" || isfavorite || view_share || view_recent) {
+    var file_id
+    if (cur_path != "/" || isfavorite || view_share || view_recent || view_share_done) {
         html += "<tr class='hover'>";
         html += "<td></td>";
         var id = getParameterByName('id');
         if(isfavorite){
-            html += "<td style='text-align: left;'><a class='file' onclick=\"list_files('','/');\">..</a></td>";
-        } else if(view_share)
+            html += "<td style='text-align: left;'><a class='file' onclick=\"list_files('','/');\" style=\"cursor: pointer;\">..</a></td>";
+        } else if(view_share || view_share_done)
         {
             if(parentPath != '' && id != null)
                 html += "<td style='text-align: left;'><a class='file' onclick=\"window.history.pushState('', '', '/listshare/?id=" + parentPath + "'); list_share();\" style=\"cursor: pointer;\">..</a></td>";
             else if(parentPath == '' && id != null)
                 html += "<td style='text-align: left;'><a class='file' onclick=\"window.history.pushState('', '', '/listshare/'); list_share();\" style=\"cursor: pointer;\">..</a></td>";
             else
-                html += "<td style='text-align: left;'><a class='file' href='/list/'>..</a></td>";
+                html += "<td style='text-align: left;'><a class='file' href='/list/' >..</a></td>";
         }
         else {
             html += "<td style='text-align: left;'><a class='file' id='fuck' onclick=\"list_files('','"+parentPath+"'); window.history.pushState('', '', '/list"+parentPath+"');\" style=\"cursor: pointer;\">..</a></td>";
@@ -240,6 +268,7 @@ function load_files(value, files, cur_path) {
             modified = files[i]['modified'];
             path = files[i]['path'];
             file_id = files[i]['id'];
+
             if(value=="")
                 displayname = name + "/";
             else
@@ -248,26 +277,34 @@ function load_files(value, files, cur_path) {
             html += "<td><input type='checkbox' class='check' hidden='false'/></td>";
             if(view_share)
                 html += "<td style='text-align: left;'><a class='file' onclick=\"window.history.pushState('', '', '/listshare/?id=" + file_id + "'); list_share();\" style=\"cursor: pointer;\">" + displayname + "</a></td>";
+            else if(view_share_done)
+                html += "<td style='text-align: left;'><a class='file' onclick=\"window.location.href='/list"+path+"'\" style=\"cursor: pointer;\">" + displayname + "</a></td>";
             else
                 html += "<td style='text-align: left;'><a class='file' id='file"+ i + "'style=\"cursor: pointer;\" onclick=\"list_files('','"+path+"'); window.history.pushState('', '', '/list"+path+"');\">" + displayname + "</a></td>";
             html += "<td>" + dateToString(modified) + "</td>";
             html += "<td>folder</td>";
-            if(!view_share){
+            if(!view_share && !view_share_done){
                 if(!files[i]['favorite'])
                     html += "<td id='star' style='cursor:default'>★</td>\n";
                 else
                     html += "<td id='star' style='cursor:default; color:orange;'>★</td>\n";
             } else {
-                html += "<td>"+ files[i]['owner'] + "</td>\n";
+                if(view_share)
+                    html += "<td>"+ files[i]['owner'] + "</td>\n";
+                else
+                    html += "<td>" + files[i]['shared_user'] + "</td>\n";
             }
 
             html += "<td id='path' hidden>" + files[i]['path'] + "</td>";
+            if(view_share_done)
+                html += "<td id='shared_id' hidden>" + files[i]['shared_id'] + "</td>";
             html += "</tr>";
         }
     }
     for (var i = 0; i < files.length; i++) {
         isDirectory = files[i]['is_directory'];
         if (!isDirectory) {
+
             name = files[i]['name'];
             modified = files[i]['modified'];
             path = files[i]['path'];
@@ -286,16 +323,23 @@ function load_files(value, files, cur_path) {
 
             html += "<td>" + dateToString(modified) + "</td>";
             html += "<td>file</td>";
-            if(!view_share){
+            if(!view_share && !view_share_done){
                 if(!files[i]['favorite'])
                     html += "<td id='star' style='cursor:default'>★</td>\n";
                 else
                     html += "<td id='star' style='cursor:default; color:orange;'>★</td>\n";
             } else {
-                html += "<td>"+ files[i]['owner'] + "</td>\n";
+                if(view_share)
+                    html += "<td>"+ files[i]['owner'] + "</td>\n";
+                else
+                    html += "<td>" + files[i]['shared_user'] + "</td>\n";
             }
+
             html += "<td id='path' hidden>" + files[i]['path'] + "</td>";
+            if(view_share_done)
+                html += "<td id='shared_id' hidden>" + files[i]['shared_id'] + "</td>";
             html += "</tr>";
+
         }
 
     }
@@ -505,6 +549,26 @@ function remove_file(items, file_len, file_num) {
         });
 }
 
+function remove_share(items, file_len, file_num) {
+        $.ajax({
+            method: "POST",
+            data: {
+                'id': items[file_num]
+            },
+            url: '/api/removeshare/',
+            success: function (data) {
+                removed++;
+                showSnackBar("삭제중...");
+                $("#removed"+file_num).html("deleted");
+                list_do_share();
+            },
+            error: function (data) {
+                goMainPage();
+                showSnackBar("An error occured, please try again later")
+            }
+        });
+}
+
 var shared = 0;
 function share_file(items, file_len, file_num, email) {
         $.ajax({
@@ -522,7 +586,15 @@ function share_file(items, file_len, file_num, email) {
                 }
             },
             error: function (data) {
-                showSnackBar("존재하지 않는 Email입니다");
+                if(data['responseJSON']['error'] == "Already Shared")
+                {
+
+                }
+                    //showSnackBar("이미 공유 되었습니다.");
+                else if(data['responseJSON']['error'] == 'Cannot share to owner')
+                    showSnackBar("자신에게는 공유할 수 없습니다");
+                else
+                    showSnackBar("존재하지 않는 Email입니다");
             }
         });
 }
@@ -557,6 +629,16 @@ function findCheckedItems() {
     var checked_items = [];
     $('input[type="checkbox"]:checked').each(function() {
         var item = $(this).closest(".hover").find("#path").html();
+        if(item != null)
+           checked_items.push(item);
+    });
+    return checked_items;
+}
+
+function findCheckedItemsUUID() {
+    var checked_items = [];
+    $('input[type="checkbox"]:checked').each(function() {
+        var item = $(this).closest(".hover").find("#shared_id").html();
         if(item != null)
            checked_items.push(item);
     });
@@ -640,7 +722,9 @@ $(document).on('click', '#star', function () {
 
 $(document).on('click', '#stars', function () {
     window.history.pushState("", "", '/list/');
+
     view_share=false;
+    view_share_done=false;
     $.ajax({
         method: "GET",
         url: '/api/listfavorite/',
@@ -663,10 +747,14 @@ $(document).on('change','.check',function() {
     var checked_items = findCheckedItems();
     if(checked)
     {
-        if(!view_share){
+        if(!view_share && !view_share_done){
             $(".delete").attr("hidden",false);
             $(".share").attr("hidden",false);
         }
+        if(view_share_done){
+            $(".removeshare").attr("hidden",false);
+        }
+
 
         $(this).attr("hidden",false);
     }
@@ -674,9 +762,12 @@ $(document).on('change','.check',function() {
     {
         $(this).attr("hidden",true)
         if(checked_items.length==0){
-            if(!view_share){
+            if(!view_share && !view_share_done){
                 $(".delete").attr("hidden",true);
                 $(".share").attr("hidden",true);
+            }
+            if(view_share_done){
+                $(".removeshare").attr("hidden",true);
             }
         }
     }
@@ -704,6 +795,17 @@ $(document).on('click','#removeItem', function() {
 
 });
 
+$(document).on('click','#removeShare', function() {
+    $('#removeshareModal').modal();
+    var checked_items = findCheckedItems();
+    var html="";
+    for(var i=0;i<checked_items.length;i++) {
+        html += "<tr class=\"hover\"><td style=\"text-align: left;\">"+checked_items[i]+"</td><td style='text-align: left;'><span id='removed"+i+"'></span></td></tr>";
+    }
+    $('#removeshareModal').find("#removeshareItem").html(html);
+
+});
+
 $(document).on('click','#deleteBtn', function() {
     var path;
     var items = findCheckedItems();
@@ -711,6 +813,16 @@ $(document).on('click','#deleteBtn', function() {
     $("#deleteModal").modal('toggle');
     for(var i = 0; i<items.length;i++) {
         remove_file(items, items.length, i);
+    }
+});
+
+$(document).on('click','#removeShareBtn', function() {
+    var path;
+    var items = findCheckedItemsUUID();
+    removed = 0;
+    $("#removeshareModal").modal('toggle');
+    for(var i = 0; i<items.length;i++) {
+        remove_share(items, items.length, i);
     }
 });
 
@@ -769,6 +881,10 @@ $(document).on('hide.bs.modal', '#uploadModal', function() {
 
 $(document).on('hide.bs.modal', '#createDirectoryModal', function() {
     $("#directoryName").val("");
+});
+
+$(document).on('hide.bs.modal', '#removeshareModal', function() {
+    $("#removeshareItem").val("");
 });
 
 $(document).on('hide.bs.modal', '#deleteModal', function() {

@@ -19,5 +19,7 @@ urlpatterns = [
     path('favorite/', FileFavoriteApi.as_view()),
     path('share/', ShareApi.as_view()),
     path('listshare/', ListShareApi.as_view()),
-    path('downloadshare/', DownloadShareApi.as_view())
+    path('downloadshare/', DownloadShareApi.as_view()),
+    path('listdoshare/', ListDoShareApi.as_view()),
+    path('removeshare/', ShareDeleteApi.as_view())
 ]
