@@ -1,0 +1,7 @@
+django==2.0.0
+djangorestframework
+djangorestframework_jwt
+psycopg2==2.7.1
+boto3
+requests
+social-auth-app-django

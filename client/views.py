@@ -96,70 +96,39 @@ def listView(request,path='/'):
     if(not check_auth(request)):
         return redirect('user-login')
     if(request.method == 'GET'):
-        error=''
-        if 'error' in request.GET:
-            error = request.GET['error']
-        r = requests.get('http://127.0.0.1:8000/api/list'+path, headers={'Authorization': 'Bearer '+ request.session['token'] }).json()
-        r['error']=error
+        r = {}
+        r['path'] = path
         r['token']=request.session['token']
-        print(r)
+        r['username'] = request.user.username
         return render(request, 'client/main.html', r)
 
-    if(request.method == 'POST'):
-        # 폴더 생성 부분
-        if('name' in request.POST):
-            name = request.POST['name']
-            r = requests.post('http://127.0.0.1:8000/api/create/', headers={'Authorization': 'Bearer '+request.session['token'] }, data={'name' : name,'is_directory':True, 'path':path}).json()
-            if('error' in r):
-                return HttpResponseRedirect('?path='+path+"&error="+r['error'])
-        # 파일 업로드 부분
-        elif('filedata' in request.FILES or 'uploadInput' in request.FILES or 'file' in request.FILES):
-            file = request.FILES['file']
-            r = requests.post('http://127.0.0.1:8000/api/upload/',
-                              headers={'Authorization': 'Bearer ' + request.session['token']},
-                              data={'name': file.name, 'is_directory': False, 'path': path, 'size' : len(file) }).json()
 
-            part_info = {'Parts':[]}
-            print(r)
-
-            for num in r['url'].keys():
-                chunk = file.read(5*1024*1024*1024)
-                res = requests.put(r['url'][num], data=chunk)
-                part_info['Parts'].append({'PartNumber':int(num), 'ETag': res.headers['ETag'].replace("\"",'')})
-
-            part_info = str(part_info)
-            part_info = part_info.replace("\'","\"")
-            print("Part Info", part_info)
-            com = requests.post('http://127.0.0.1:8000/api/upload_complete/',
-                              headers={'Authorization': 'Bearer ' + request.session['token']},
-                              data={'name': file.name, 'uploadid': r['uploadid'], 'items': part_info, 'path': path}).json()
-            print(com)
-            #res = requests.put(r['url'], data=file)
-            #print(res.content)
-            #print("UPLOADED:::::", r)
-            if ('error' in r):
-                return HttpResponseRedirect('?error=' + r['error'])
-        elif(not ('filedeata' in request.FILES) and 'path' in request.POST):
-            r = requests.post('http://127.0.0.1:8000/api/delete/',
-                              headers={'Authorization': 'Bearer ' + request.session['token']},
-                              data={'path': request.POST['path']}).json()
-            if ('error' in r):
-                return redirect('list-view')
-        if(path!='/'):
-            return redirect('list-view',path[1:-1])
-        else:
-            return redirect('list-view')
+@csrf_exempt
+def shareView(request):
+    if(not check_auth(request)):
+        return redirect('user-login')
+    if(request.method == 'GET'):
+        r = {}
+        r['path'] = "/Shared Folder"
+        r['token'] = request.session['token']
+        r['username'] = request.user.username
+        return render(request, 'client/share.html', r)
 
 
 def DownloadView(request, path):
-    path='/'+path
+    path = '/'+path
     if(not check_auth(request)):
         return redirect('user-login')
     if(request.method == 'GET'):
         error=''
         if 'error' in request.GET:
             error = request.GET['error']
-        r = requests.get('http://127.0.0.1:8000/api/download'+path, headers={'Authorization': 'Bearer '+ request.session['token'] }).json()
+        id = request.GET.get('id','')
+        if(id != ''):
+            r = requests.get('http://127.0.0.1:8000/api/downloadshare/?id='+id,
+                             headers={'Authorization': 'Bearer ' + request.session['token']}).json()
+        else:
+            r = requests.get('http://127.0.0.1:8000/api/download'+path, headers={'Authorization': 'Bearer '+ request.session['token'] }).json()
         print("DOWNLOADED",r)
         if('error' in r):
             return redirect('list-view')

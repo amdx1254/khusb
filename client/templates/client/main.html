@@ -8,10 +8,11 @@
 
 <main>
     <ul class="contextmenu">
-      <li><a id="downloadItem" class="download" hidden>다운로드</a></li>
-      <li><a id="#uploadModal" data-toggle="modal" data-target="#uploadModal">업로드</a></li>
-      <li><a id="#createDirectoryModal" data-toggle="modal" data-target="#createDirectoryModal">폴더생성</a></li>
-      <li><a id="removeItem" class="delete" hidden>삭제</a></li>
+        <li><a id="downloadItem" class="download" hidden>다운로드</a></li>
+        <li><a id="#uploadModal" data-toggle="modal" data-target="#uploadModal">업로드</a></li>
+        <li><a id="#createDirectoryModal" data-toggle="modal" data-target="#createDirectoryModal">폴더생성</a></li>
+        <li><a id="removeItem" class="delete" hidden>삭제</a></li>
+        <li><a id="#shareModal" class="share" data-toggle="modal" data-target="#shareModal" hidden>공유</a></li>
     </ul>
 
     <table class="table" id="Table">
@@ -31,7 +32,16 @@
 
 
     </table>
-
+<script>
+    var token = document.getElementById("token").value
+    currentDirId = document.getElementById("path").value
+    $.ajaxSetup({
+        headers: {
+            'Authorization': 'Bearer ' + token
+        }
+    })
+    list_files();
+</script>
 </main>
 {% endblock %}
 

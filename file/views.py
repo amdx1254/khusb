@@ -4,8 +4,8 @@ from rest_framework import generics, permissions
 from rest_framework.views import APIView, Response
 from .permissions import IsOwnerOrReadOnly
 from account.models import User
-from .models import File
-from .serializers import FileSerializer
+from .models import File, Share
+from .serializers import FileSerializer, ShareSerializer
 from rest_framework_jwt.authentication import  JSONWebTokenAuthentication
 from django.conf import settings
 from django.http import HttpResponse
@@ -50,11 +50,18 @@ class FolderListApi(APIView):
         if(path!='/'):
             path='/'+path+'/'
         try:
+            sort = request.GET.get('recently','')
             directory = File.objects.get(owner=request.user, path=path)
-            files = File.objects.filter(owner=request.user, parent=directory)
+            if(sort=='modified'):
+                files = File.objects.filter(owner=request.user).order_by('-modified')[:10]
+            elif(sort=='created'):
+                files = File.objects.filter(owner=request.user).order_by('-created')[:10]
+            else:
+                files = File.objects.filter(owner=request.user, parent=directory).order_by('name')
         except File.DoesNotExist:
             return Response({"status": "404", "error": "Not Found"}, status=status.HTTP_404_NOT_FOUND)
         result = {}
+
         dir = FileSerializer(directory)
         result['available_size'] = request.user.max_size - request.user.cur_size
         result['used_size'] = request.user.cur_size
@@ -68,7 +75,11 @@ class FolderListApi(APIView):
         result['items'] = []
         for file in files:
             ser = FileSerializer(file)
-            result['items'].append(ser.data)
+            if(sort == ''):
+                result['items'].append(ser.data)
+            else:
+                if(file.path != '/' and not file.is_directory):
+                    result['items'].append(ser.data)
 
         return Response(result, status=status.HTTP_200_OK)
 
@@ -123,45 +134,6 @@ class FileSearchApi(APIView):
 
 
         return Response(result, status=status.HTTP_200_OK)
-
-
-class FileCreateApi(APIView):
-    permission_classes = (IsAuthenticated, )
-
-    def post(self, request):
-        result = {}
-        try:
-            name = request.data['name']
-            path = request.data['path']
-            size = request.data['size']
-            filepath = path + name
-            directory = File.objects.get(owner=request.user, path=path)
-
-        except File.DoesNotExist:
-            return Response({"status": "404", "error": "Parent Not Found"}, status=status.HTTP_404_NOT_FOUND)
-        test = File.objects.filter(owner=request.user, parent=directory, name=name, is_directory=False)
-        if len(test)>0:
-            return Response({"status": "400", "error": "Already Exist"}, status=status.HTTP_400_BAD_REQUEST)
-        serializer = FileSerializer(data=request.data)
-
-        if(serializer.is_valid()):
-            serializer.save(owner=request.user, parent=directory, is_directory=False, size=size, path=filepath)
-
-            request.user.cur_size = request.user.cur_size+int(size)
-            request.user.save()
-            tmp = directory
-            while(not tmp == None):
-                tmp.size = tmp.size+int(size)
-                tmp.save()
-                tmp = tmp.parent
-            uploadid = create_multipart_upload(str(request.user.id), serializer.data['path'])
-            url = get_upload_url(str(request.user.id), serializer.data['path'])
-            result['item'] = serializer.data
-            result['uploadid'] = uploadid
-            result['url'] = url
-
-            return Response(result, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class FileCreateStartApi(APIView):
@@ -252,6 +224,7 @@ class FileCreateCompleteApi(APIView):
                 tmp = directory
                 while(not tmp == None):
                     tmp.size = tmp.size+int(size)
+                    tmp.modified = datetime.datetime.now()
                     tmp.save()
                     tmp = tmp.parent
                 complete_multipart_upload(str(request.user.id), filepath, UploadId, MultipartUpload)
@@ -403,3 +376,84 @@ class FileFavoriteApi(APIView):
 
         except File.DoesNotExist:
             return Response({"status": "404", "error": "Not Found"}, status=status.HTTP_404_NOT_FOUND)
+
+
+class ShareApi(APIView):
+    permission_classes = (IsAuthenticated, )
+
+    def post(self, request):
+        try:
+            object = File.objects.get(owner=request.user, path=request.data['path'])
+            user = User.objects.get(email=request.data['email'])
+
+            serializer = ShareSerializer(data={"file": object.id, "read": True, "write": False})
+
+            if(serializer.is_valid()):
+                serializer.save(owner=user)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+        except File.DoesNotExist:
+            return Response({"status": "404", "error": "FIle Not Found"}, status=status.HTTP_404_NOT_FOUND)
+        except User.DoesNotExist:
+            return Response({"status": "404", "error": "User Not Found"}, status=status.HTTP_404_NOT_FOUND)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ListShareApi(APIView):
+    permission_classes = (IsAuthenticated, )
+
+    def get(self, request):
+        id = request.GET.get("id","")
+        result = {}
+        items = []
+        result['parent'] = ''
+        if(id == ""):
+            files = Share.objects.filter(owner=request.user)
+            for file in files:
+                item = FileSerializer(file.file)
+                items.append(item.data)
+        else:
+            try:
+                object = File.objects.get(id=id)
+                if(object.is_shared(request.user)):
+                    files = File.objects.filter(parent=object)
+                    for file in files:
+                        item = FileSerializer(file)
+                        items.append(item.data)
+                    if(object.parent.is_shared(request.user)):
+                        result['parent']=str(object.parent.id)
+                    else:
+                        result['parent'] = ''
+
+                else:
+                    return Response({"status": "404", "error": "FIle Not Found"}, status=status.HTTP_404_NOT_FOUND)
+            except File.DoesNotExist:
+                return Response({"status": "404", "error": "FIle Not Found"}, status=status.HTTP_404_NOT_FOUND)
+
+        result['available_size'] = request.user.max_size - request.user.cur_size
+        result['used_size'] = request.user.cur_size
+        result['offset'] = 0
+        result['username'] = request.user.username
+        result['length'] = len(items)
+        result['items'] = items
+
+
+        return Response(result, status=status.HTTP_200_OK)
+
+
+class DownloadShareApi(APIView):
+    permission_classes = (IsAuthenticated, )
+
+    def get(self, request):
+        try:
+            print(request.GET.get("id",""))
+            object = File.objects.get(id=request.GET.get("id",""))
+            if(object.is_shared(request.user)):
+                serializer = FileSerializer(object).data
+                url = get_download_url(str(object.owner.id), object.path)
+                serializer['url'] = url
+                return Response(serializer)
+            else:
+                return Response({"status": "404", "error": "FIle Not Found"}, status=status.HTTP_404_NOT_FOUND)
+        except File.DoesNotExist:
+            return Response({"status": "404", "error": "FIle Not Found"}, status=status.HTTP_404_NOT_FOUND)

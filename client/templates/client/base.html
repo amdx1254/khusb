@@ -11,13 +11,13 @@
     <script src='//unpkg.com/jquery@3/dist/jquery.min.js'></script>
     <script src='//unpkg.com/popper.js@1/dist/umd/popper.min.js'></script>
     <script src='//unpkg.com/bootstrap@4/dist/js/bootstrap.min.js'></script>
-    <script src='{% static 'js/main.js' %}'></script>
+
+    <script src="{% static 'js/main.js' %}"></script>
 
 </head>
 <body oncontextmenu='return false' onselectstart='return false' ondragstart='return false'>
 <input type="hidden" id="token" name="token" value="{{ token }}">
 <input type="hidden" id="path" name="path" value="{{ path }}">
-<input type="hidden" id="parent" name="parent" value="{{ parent }}">
 <div class="main_page">
     <nav>
         <div class="nav">
@@ -34,19 +34,29 @@
             </id>
             <directory>
                 <ul>
-
-                    <li><a href="#stars" id="stars">즐겨찾기</a></li>
-                    <li><a href="#recent">최근 수정한 파일</a></li>
-                    <li><a href="#added">최근 추가한 파일</a></li>
+                    <li><a href="/list/" id="listfilebtn">내 파일</a></li>
+                    <li><a href="#" id="stars">즐겨찾기</a></li>
+                    <li><a href="/listshare/" id="sharedlist">공유파일</a></li>
+                    <li><a href="#" id="recent">최근 수정한 파일</a></li>
+                    <li><a href="#" id="added">최근 추가한 파일</a></li>
                 </ul>
             </directory>
 
             <rocket>
                 <div id="rocket">
-                    <img src="{% static 'css/main_image/rocket.png' %}" style="width:50px;height:50px">
-                    <a href="/logout/" class="font">로그아웃</a>
+                    <img class = "origin_rocket" src="{% static 'css/main_image/rocket1.png' %}" style="width:55%; height:55%; ">
+                    <img class = "over_rocket" src="{% static 'css/main_image/rocket2.png' %}" style="width:55%; clip:rect(calc(({{available_size}} - {{used_size}}) / {{ available_size }} * 137.5 * 1px) 137.5px 137.5px 0px)">
+
                 </div>
             </rocket>
+
+            <div>
+              <p class = "size">
+
+            </p>
+
+              <a href="/logout/" class="font">로그아웃</a>
+            </div>
 
         </div>
     </nav>
@@ -62,9 +72,10 @@
             <load>
                 <ul class="folder_menu">
                     <li><a id="downloadItem" class="download" hidden>다운로드</a></li>
-                    <li><a id="#uploadModal" data-toggle="modal" data-target="#uploadModal">업로드</a></li>
-                    <li><a id="#createDirectoryModal" data-toggle="modal" data-target="#createDirectoryModal">폴더생성</a></li>
+                    <li><a id="#uploadModal" class="upload" data-toggle="modal" data-target="#uploadModal">업로드</a></li>
+                    <li><a id="#createDirectoryModal" class="createfolder" data-toggle="modal" data-target="#createDirectoryModal">폴더생성</a></li>
                     <li><a id="removeItem" class="delete" hidden>삭제</a></li>
+                    <li><a id="#shareModal" class="share" data-toggle="modal" data-target="#shareModal" hidden>공유</a></li>
                 </ul>
             </load>
         </div>
@@ -124,6 +135,7 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
                 <button type="button" class="btn btn-primary" id="uploadBtn">Upload</button>
+                <button type="button" class="btn btn-primary" id="abortBtn" hidden>Abort</button>
             </div>
         </div>
     </div>
@@ -172,7 +184,43 @@
     </div>
 </div>
 
+<div id="shareModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="shareModal"
+     aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Share</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="shareresult">
 
+                </div>
+                <h6>EMAIL:</h6>
+                <input type="text" name="email" id="emailInput">
+            </div>
 
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="shareBtn">Share</button>
+            </div>
+        </div>
+    </div>
+
+</div>
+    <div id="snackbar_download">
+        <table>
+            <tr>
+                <td id="snackbar_content"></td>
+                <td id="snackbar_abort">
+                    <button type="button" class="btn btn-default btn-block" id="abortBtn">x</button>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div id="snackbar">
+    </div>
 </body>
 </html>

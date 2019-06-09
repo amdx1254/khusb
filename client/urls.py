@@ -7,7 +7,8 @@ urlpatterns = [
     path('login-social', views.SocialLoginView, name='social-login'),
     path('list/', views.listView, name='list-view'),
     path('list/<path:path>/', views.listView, name='list-view'),
-    path('logout/',views.LogoutView),
+    path('listshare/', views.shareView),
+    path('logout/', views.LogoutView),
     path('download/',views.DownloadView),
     path('download/<path:path>/', views.DownloadView),
 ]

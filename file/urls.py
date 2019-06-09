@@ -8,7 +8,6 @@ urlpatterns = [
     path('listfavorite/', FavoriteListApi.as_view()),
     path('search/',FileSearchApi.as_view()),
     path('search/<path:path>/',FileSearchApi.as_view()),
-    path('upload/', FileCreateApi.as_view()),
     path('upload_start/', FileCreateStartApi.as_view()),
     path('upload_complete/', FileCreateCompleteApi.as_view()),
     path('upload_abort/', FileCreateAbortApi.as_view()),
@@ -17,5 +16,8 @@ urlpatterns = [
     path('delete/',FileDeleteApi.as_view()),
     path('move/', FileMoveApi.as_view()),
     path('copy/', FileCopyApi.as_view()),
-    path('favorite/', FileFavoriteApi.as_view())
+    path('favorite/', FileFavoriteApi.as_view()),
+    path('share/', ShareApi.as_view()),
+    path('listshare/', ListShareApi.as_view()),
+    path('downloadshare/', DownloadShareApi.as_view())
 ]

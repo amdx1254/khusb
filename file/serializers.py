@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import File
+from .models import File, Share
 
 
 class FileSerializer(serializers.ModelSerializer):
@@ -7,7 +7,7 @@ class FileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = File
-        fields = ('id', 'owner', 'parent', 'name', 'size', 'is_directory', 'type', 'path', 'modified', 'favorite')
+        fields = ('id', 'owner', 'parent', 'name', 'size', 'is_directory', 'type', 'path', 'created', 'modified', 'favorite')
 
     def get_type(self, obj):
         return obj.set_type()
@@ -26,4 +26,21 @@ class FileSerializer(serializers.ModelSerializer):
         if(not is_directory):
             file.set_type()
         file.save()
+        return validated_data
+    
+
+class ShareSerializer(serializers.ModelSerializer):
+    owner = serializers.ReadOnlyField(source='owner.username', required=False)
+
+    class Meta:
+        model = Share
+        fields = ('id', 'owner', 'file', 'read', 'write')
+
+    def create(self, validated_data):
+        owner = validated_data['owner']
+        file = validated_data['file']
+        read = validated_data['read']
+        write = validated_data['write']
+        share = Share.objects.create(owner=owner, file=file, read=read, write=write)
+        share.save()
         return validated_data
