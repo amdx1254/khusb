@@ -311,7 +311,7 @@ function sortTable(n) {
 
 function make_upload(file_len, file_num) {
     uploadaborted = false;
-    if(file_len > file_num){
+    if(file_len > file_num && !uploadaborted){
 
         var unloadHandler = function () {
             uploadaborted = true;
@@ -393,9 +393,7 @@ function make_upload(file_len, file_num) {
 function upload_file(url, filedata, chunk_id, len_url, len_file, file_num, file_len) {
     var xhr = new XMLHttpRequest();
     xhr.upload.addEventListener("progress", function (e) {
-        if(uploadaborted){
-            xhr.abort();
-        }
+
         uploaded_size[chunk_id - 1] = e.loaded;
         var sum = 0;
         for (var i = 0; i < len_url; i++) {
@@ -409,9 +407,8 @@ function upload_file(url, filedata, chunk_id, len_url, len_file, file_num, file_
         $('#size'+file_num).html(display_sum+'/'+display_len);
         showPermanantSnackBar((file_num+1) + "/" + file_len + "  " + $("#uploadInput")[0].files[file_num].name + "   " + "<progress max=\"100\" value=\"0\" id=\"snackprogress\"></progress>" + "   " + display_sum + "/" + display_len);
         $('#snackprogress').val(per);
-        if (e.lengthComputable) {
-            //console.log(e.loaded / (e.total*len_url));
-
+        if(uploadaborted){
+            xhr.abort();
         }
     });
 
