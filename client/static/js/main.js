@@ -221,16 +221,72 @@ function list_do_share() {
     });
 }
 
+function list_modal(path, method) {
+    var url = '/api/list'+path;
+        $.ajax({
+            method: "GET",
+            url: url,
+            success: function (data) {
+                load_files_modal(data['items'], path, data['parent'], method);
+
+            },
+            error: function (data) {
+                goMainPage();
+                showSnackBar("An error occured, please try again later")
+            }
+    });
+}
+
 function dateToString(date) {
     var year = date.substring(0, 10);
     var time = date.substring(11,16);
     return year + " " + time;
 }
 
+function load_files_modal(files, cur_path, parent_path, method) {
+    if(method=="move")
+    {
+        $("#movePath").html("/HOME"+cur_path);
+        $("#movefiles").html("");
+    }
+    else{
+        $("#copyPath").html("/HOME"+cur_path);
+        $("#copyfiles").html("");
+    }
+
+    var html = "";
+    var name;
+    var isDirectory;
+    var path
+
+    if (cur_path != "/") {
+        html += "<tr class='hover'>";
+        html += "<td style='text-align: left;'><a class='file' onclick=\"list_modal('"+parent_path+"');\" style=\"cursor: pointer;\">..</a></td>";
+        html += "</tr>";
+    }
+    for (var i = 0; i < files.length; i++) {
+        isDirectory = files[i]['is_directory'];
+        if (isDirectory) {
+            name = files[i]['name'];
+            path = files[i]['path']
+            html += "<tr class='hover'>";
+            html += "<td style='text-align: left;'><a class='file' id='file"+ i + "'style=\"cursor: pointer;\" onclick=\"list_modal('"+path+"');\">" + name + "/</a></td>";
+            html += "</tr>";
+        }
+    }
+    if(method=="move")
+    {
+        $("#movefiles").html(html);
+    }
+    else{
+        $("#copyfiles").html(html);
+    }
+}
+
 function load_files(value, files, cur_path) {
     var html = "";
 
-    $("#items").html("")
+    $("#items").html("");
     var name;
     var modified;
     var displayname
@@ -569,6 +625,60 @@ function remove_share(items, file_len, file_num) {
         });
 }
 
+function move_file(items, file_len, file_num, from, to) {
+        $.ajax({
+            method: "POST",
+            data: {
+                'from_path': items[file_num],
+                'to_path': to
+            },
+            url: '/api/move/',
+            success: function (data) {
+                list_files('', currentPath);
+            },
+            error: function (data) {
+                goMainPage();
+                showSnackBar(items[file_num] +"  이 작업은 허용되지 않습니다");
+            }
+        });
+}
+
+function copy_file(items, file_len, file_num, from, to) {
+        $.ajax({
+            method: "POST",
+            data: {
+                'from_path': items[file_num],
+                'to_path': to
+            },
+            url: '/api/copy/',
+            success: function (data) {
+                list_files('', currentPath);
+            },
+            error: function (data) {
+                goMainPage();
+                showSnackBar(items[file_num] +"  이 작업은 허용되지 않습니다");
+            }
+        });
+}
+
+function copy_file(items, file_len, file_num, from, to) {
+        $.ajax({
+            method: "POST",
+            data: {
+                'from_path': items[file_num],
+                'to_path': to
+            },
+            url: '/api/copy/',
+            success: function (data) {
+                list_files('', currentPath);
+            },
+            error: function (data) {
+                goMainPage();
+                showSnackBar(items[file_num] +"  이 작업은 허용되지 않습니다");
+            }
+        });
+}
+
 var shared = 0;
 function share_file(items, file_len, file_num, email) {
         $.ajax({
@@ -750,6 +860,8 @@ $(document).on('change','.check',function() {
         if(!view_share && !view_share_done){
             $(".delete").attr("hidden",false);
             $(".share").attr("hidden",false);
+            $(".move").attr("hidden",false);
+            $(".copy").attr("hidden",false);
         }
         if(view_share_done){
             $(".removeshare").attr("hidden",false);
@@ -765,6 +877,8 @@ $(document).on('change','.check',function() {
             if(!view_share && !view_share_done){
                 $(".delete").attr("hidden",true);
                 $(".share").attr("hidden",true);
+                $(".move").attr("hidden",true);
+                $(".copy").attr("hidden",true);
             }
             if(view_share_done){
                 $(".removeshare").attr("hidden",true);
@@ -813,6 +927,34 @@ $(document).on('click','#deleteBtn', function() {
     $("#deleteModal").modal('toggle');
     for(var i = 0; i<items.length;i++) {
         remove_file(items, items.length, i);
+    }
+});
+
+$(document).on('click','.move', function() {
+    list_modal('/', 'move');
+});
+
+$(document).on('click','.copy', function() {
+    list_modal('/', 'copy');
+});
+
+$(document).on('click','#moveBtn', function() {
+    var path = $("#movePath").html().substring(5);
+    var items = findCheckedItems();
+    removed = 0;
+    $("#moveModal").modal('toggle');
+    for(var i = 0; i<items.length;i++) {
+        move_file(items, items.length, i, currentPath, path);
+    }
+});
+
+$(document).on('click','#copyBtn', function() {
+    var path = $("#copyPath").html().substring(5);
+    var items = findCheckedItems();
+    removed = 0;
+    $("#copyModal").modal('toggle');
+    for(var i = 0; i<items.length;i++) {
+        copy_file(items, items.length, i, currentPath, path);
     }
 });
 
@@ -900,3 +1042,4 @@ window.onpopstate = function(event) {
     }
   console.log("location: " + document.location + ", state: " + JSON.stringify(event.state));
 };
+

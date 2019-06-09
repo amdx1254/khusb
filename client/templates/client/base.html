@@ -76,7 +76,10 @@
                     <li><a id="#createDirectoryModal" class="createfolder" data-toggle="modal" data-target="#createDirectoryModal">폴더생성</a></li>
                     <li><a id="removeItem" class="delete" hidden>삭제</a></li>
                     <li><a id="#shareModal" class="share" data-toggle="modal" data-target="#shareModal" hidden>공유</a></li>
+                    <li><a id="#moveModal" class="move" data-toggle="modal" data-target="#moveModal" hidden>이동</a></li>
+                    <li><a id="#copyModal" class="copy" data-toggle="modal" data-target="#copyModal" hidden>복사</a></li>
                     <li><a id="removeShare" class="removeshare" hidden>공유삭제</a></li>
+
                 </ul>
             </load>
         </div>
@@ -210,6 +213,69 @@
         </div>
     </div>
 </div>
+
+<div id="moveModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="moveModal" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"></h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="move">
+                    <table class="table" id="moveitems">
+                        <tr>
+                            <th id="movePath">
+                            /HOME/
+                            </th>
+                        </tr>
+                        <tbody id="movefiles">
+
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="moveBtn">Move</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="copyModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="copyModal" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"></h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="copy">
+                    <table class="table" id="copyitems">
+                        <tr>
+                            <th id="copyPath">
+                            /HOME/
+                            </th>
+                        </tr>
+                        <tbody id="copyfiles">
+
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="copyBtn">Copy</button>
+            </div>
+        </div>
+    </div>
+</div>
+
     <div id="snackbar_download">
         <table>
             <tr>

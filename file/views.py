@@ -80,7 +80,6 @@ class FolderListApi(APIView):
             else:
                 if(file.path != '/' and not file.is_directory):
                     result['items'].append(ser.data)
-        print((result['items']))
         return Response(result, status=status.HTTP_200_OK)
 
 
@@ -314,21 +313,28 @@ class FileCopyApi(APIView):
     def post(self, request):
         try:
             from_object = File.objects.get(owner=request.user, path=request.data['from_path'])
-            to_parent_path = requests.data['to_path'][:requests.data['to_path'].rfind('/')+1]
-            to_parent_object = File.objects.get(owner=request.user, path=to_parent_path)
-            if(object.IsDirectory == True):
-                return Response({"status": "400", "error": "Cannot copy directory"},
-                                status=status.HTTP_400_BAD_REQUEST)
-            copy_object(str(request.user.id), request.data['from_path'], request.data['to_path'])
-            new_object = {'name': from_object.name, 'is_directory': from_object.is_directory, 'path': request.data['to_path']}
-            serializer = FileSerializer(new_object)
+            to_parent_object = File.objects.get(owner=request.user, path=request.data['to_path'])
+            tmp = to_parent_object
+
+            while(not tmp == None):
+                if(tmp == from_object):
+                    return Response({"status": "400", "error": "Cannot copy"}, status=status.HTTP_400_BAD_REQUEST)
+                tmp = tmp.parent
+
+            tmp = to_parent_object
+            while(not tmp == None):
+                tmp.size = tmp.size+from_object.size
+                tmp.save()
+                tmp = tmp.parent
+
+            copy_object(str(request.user.id), request.data['from_path'], request.data['to_path'] + from_object.name)
+            new_object = {'name': from_object.name, 'is_directory': from_object.is_directory, 'path': request.data['to_path'] + from_object.name}
+            serializer = FileSerializer(data=new_object)
 
             if (serializer.is_valid()):
-                serializer.save(owner=request.user, parent=to_parent_object, is_directory=False, size=from_object.size, path=request.data['to_path'])
+                serializer.save(owner=request.user, parent=to_parent_object, is_directory=False, size=from_object.size, path=request.data['to_path'] + from_object.name)
                 request.user.cur_size = request.user.cur_size + from_object.size
                 request.user.save()
-                to_parent_object.size = to_parent_object.size + from_object.size
-                to_parent_object.save()
                 return Response(serializer.data, status=status.HTTP_200_OK)
 
         except File.DoesNotExist:
@@ -341,18 +347,29 @@ class FileMoveApi(APIView):
     def post(self, request):
         try:
             from_object = File.objects.get(owner=request.user, path=request.data['from_path'])
-            to_parent_path = requests.data['to_path'][:requests.data['to_path'].rfind('/')+1]
-            to_parent_object = File.objects.get(owner=request.user, path=to_parent_path)
-            if(object.IsDirectory == True):
-                return Response({"status": "400", "error": "Cannot move directory"},
-                                status=status.HTTP_400_BAD_REQUEST)
-            from_object.parent.size = from_object.parent.size-from_object.size
-            from_object.path = requests.data['to_path']
+            to_parent_object = File.objects.get(owner=request.user, path=request.data['to_path'])
+            tmp = to_parent_object
+            while(not tmp == None):
+                if(tmp == from_object):
+                    return Response({"status": "400", "error": "Cannot move"}, status=status.HTTP_400_BAD_REQUEST)
+                tmp = tmp.parent
+
+            tmp = from_object.parent
+            while(not tmp == None):
+                tmp.size = tmp.size-from_object.size
+                tmp.save()
+                tmp = tmp.parent
+
+            tmp = to_parent_object
+            while(not tmp == None):
+                tmp.size = tmp.size+from_object.size
+                tmp.save()
+                tmp = tmp.parent
+
+            from_object.path = request.data['to_path'] + from_object.name
             from_object.parent = to_parent_object
-            to_parent_object.size = to_parent_object.size+from_object.size
             from_object.save()
-            to_parent_object.save()
-            move_object(str(request.user.id), request.data['from_path'], request.data['to_path'])
+            move_object(str(request.user.id), request.data['from_path'], request.data['to_path'] + from_object.name)
             serializer = FileSerializer(from_object)
 
             return Response(serializer.data, status=status.HTTP_200_OK)
@@ -452,7 +469,6 @@ class DownloadShareApi(APIView):
 
     def get(self, request):
         try:
-            print(request.GET.get("id",""))
             object = File.objects.get(id=request.GET.get("id",""))
             if(object.is_shared(request.user)):
                 serializer = FileSerializer(object).data
@@ -493,7 +509,6 @@ class ListDoShareApi(APIView):
         result['username'] = request.user.username
         result['length'] = len(items)
         result['items'] = items
-        print(result)
 
         return Response(result, status=status.HTTP_200_OK)
 

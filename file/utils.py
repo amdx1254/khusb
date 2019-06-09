@@ -68,10 +68,11 @@ def delete_object(user, path):
 
 def copy_object(user, sourcepath, destpath):
     copy_source = {'Bucket': bucket, 'Key': user+sourcepath}
-    s3.copy_object(Bucket=bucket, CopySource=copy_source, Key=destpath)
+    s3.copy_object(Bucket=bucket, CopySource=copy_source, Key=user+destpath)
 
 
 def move_object(user, sourcepath, destpath):
+    print(destpath)
     copy_source = {'Bucket': bucket, 'Key': user+sourcepath}
-    s3.copy_object(Bucket=bucket, CopySource=copy_source, Key=destpath)
-    s3.delete_object(Bucket=bucket, Key=sourcepath)
+    s3.copy_object(Bucket=bucket, CopySource=copy_source, Key=user+destpath)
+    s3.delete_object(Bucket=bucket, Key=user+sourcepath)
