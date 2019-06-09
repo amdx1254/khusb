@@ -1,10 +1,10 @@
-var currentDirId;
-var urls;
+var currentPath;
 var uploadid;
 var item = {'Parts': []};
+var file_list = [];
 var finished = 0;
 var uploaded_size = [];
-var parentDirId;
+var parentPath;
 var isfavorite = false;
 var view_share = false;
 var view_recent = false;
@@ -109,21 +109,28 @@ function byteTosize(byte){
     return result;
 }
 
-function list_files(recently) {
-    var url = '/api/list'+currentDirId;
-    if(recently != null){
+function list_files(recently, path) {
+    currentPath = path;
+    var url = '/api/list'+path;
+    view_share = false;
+    if(recently != ""){
         url = "/api/list?recently="+recently;
+        window.history.pushState("", "", '/list/');
+    } else
+    {
+        isfavorite = false;
+        view_recent = false;
     }
     $.ajax({
             method: "GET",
             url: url,
             success: function (data) {
-                if(recently == null)
+                if(recently == "")
                 {
-                    parentDirId = data['parent'];
+                    parentPath = data['parent'];
                     available_size = data['available_size'];
                     used_size = data['used_size'];
-                    load_files('', data['items']);
+                    load_files('', data['items'], path);
                     var checkeditems = findCheckedItems();
                     if(checkeditems.length == 0){
                         $(".delete").attr("hidden",true);
@@ -136,7 +143,7 @@ function list_files(recently) {
 
                 }
                 else
-                    load_files(recently, data['items']);
+                    load_files(recently, data['items'], path);
             },
             error: function (data) {
                 showSnackBar("An error occured, please try again later")
@@ -145,6 +152,7 @@ function list_files(recently) {
 }
 
 function list_share() {
+    view_recent = false;
     var id = getParameterByName('id');
     var loc = '/api/listshare/';
     if(id != null)
@@ -153,8 +161,9 @@ function list_share() {
         method: "GET",
         url: loc,
         success: function (data) {
-            parentDirId = data['parent'];
-            load_files("",data['items']);
+            parentPath = data['parent'];
+            file_list = data['items'];
+            load_files("",file_list);
             available_size = data['available_size'];
             used_size = data['used_size'];
 
@@ -173,7 +182,7 @@ function dateToString(date) {
     return year + " " + time;
 }
 
-function load_files(value, files) {
+function load_files(value, files, cur_path) {
     var html = "";
 
     $("#items").html("")
@@ -183,23 +192,23 @@ function load_files(value, files) {
     var path;
     var isDirectory;
     var file_id;
-    if (currentDirId != "/" || isfavorite || view_share || view_recent) {
+    if (cur_path != "/" || isfavorite || view_share || view_recent) {
         html += "<tr class='hover'>";
         html += "<td></td>";
         var id = getParameterByName('id');
         if(isfavorite){
-            html += "<td style='text-align: left;'><a class='file' href='/list'>..</a></td>";
+            html += "<td style='text-align: left;'><a class='file' onclick=\"list_files('','/');\">..</a></td>";
         } else if(view_share)
         {
-            if(parentDirId != '' && id != null)
-                html += "<td style='text-align: left;'><a class='file' href='/listshare/?id=" + parentDirId + "'>..</a></td>";
-            else if(parentDirId == '' && id != null)
-                html += "<td style='text-align: left;'><a class='file' href='/listshare/'>..</a></td>";
+            if(parentPath != '' && id != null)
+                html += "<td style='text-align: left;'><a class='file' onclick=\"window.history.pushState('', '', '/listshare/?id=" + parentPath + "'); list_share();\" style=\"cursor: pointer;\">..</a></td>";
+            else if(parentPath == '' && id != null)
+                html += "<td style='text-align: left;'><a class='file' onclick=\"window.history.pushState('', '', '/listshare/'); list_share();\" style=\"cursor: pointer;\">..</a></td>";
             else
-                html += "<td style='text-align: left;'><a class='file' href='/list'>..</a></td>";
+                html += "<td style='text-align: left;'><a class='file' href='/list/'>..</a></td>";
         }
         else {
-            html += "<td style='text-align: left;'><a class='file' href='/list" + parentDirId + "'>..</a></td>";
+            html += "<td style='text-align: left;'><a class='file' id='fuck' onclick=\"list_files('','"+parentPath+"'); window.history.pushState('', '', '/list"+parentPath+"');\" style=\"cursor: pointer;\">..</a></td>";
         }
 
         html += "<td></td>";
@@ -221,9 +230,9 @@ function load_files(value, files) {
             html += "<tr class='hover'>";
             html += "<td><input type='checkbox' class='check' hidden='false'/></td>";
             if(view_share)
-                html += "<td style='text-align: left;'><a class='file' href='/listshare?id=" + file_id + "'>" + displayname + "</a></td>";
+                html += "<td style='text-align: left;'><a class='file' onclick=\"window.history.pushState('', '', '/listshare/?id=" + file_id + "'); list_share();\" style=\"cursor: pointer;\">" + displayname + "</a></td>";
             else
-                html += "<td style='text-align: left;'><a class='file' href='/list" + path + "'>" + displayname + "</a></td>";
+                html += "<td style='text-align: left;'><a class='file' id='file"+ i + "'style=\"cursor: pointer;\" onclick=\"list_files('','"+path+"'); window.history.pushState('', '', '/list"+path+"');\">" + displayname + "</a></td>";
             html += "<td>" + dateToString(modified) + "</td>";
             html += "<td>folder</td>";
             if(!view_share){
@@ -316,15 +325,16 @@ function sortTable(n) {
     }
 }
 
-function make_upload(file_len, file_num) {
+function make_upload(file_len, file_num, path) {
     uploadaborted = false;
+    var urls;
     if(file_len > file_num && !uploadaborted){
 
         var unloadHandler = function () {
             uploadaborted = true;
             $.post('/api/upload_abort/', {
                         'name': $("#uploadInput")[0].files[file_num].name,
-                        'path': currentDirId,
+                        'path': path,
                         'uploadid': uploadid
             });
             closeSnackBar();
@@ -344,13 +354,12 @@ function make_upload(file_len, file_num) {
         $(document).on('click','#abortBtn', function() {
            unloadHandler();
         });
-
         $.ajax({
             method: "POST",
             data: {
                 'name': $("#uploadInput")[0].files[file_num].name,
                 'is_directory': false,
-                'path': currentDirId,
+                'path': path,
                 'size': $("#uploadInput")[0].files[file_num].size
             },
             url: '/api/upload_start/',
@@ -381,7 +390,7 @@ function make_upload(file_len, file_num) {
             }
             for (url in urls) {
                 filedata = $("#uploadInput")[0].files[file_num].slice(processed, processed + slice_length);
-                upload_file(urls[url], filedata, chunk_num, len_url, len_file, file_num, file_len);
+                upload_file(urls[url], filedata, chunk_num, len_url, len_file, file_num, file_len, path);
                 processed = processed + slice_length;
                 chunk_num++;
             }
@@ -399,7 +408,7 @@ function make_upload(file_len, file_num) {
     }
 }
 
-function upload_file(url, filedata, chunk_id, len_url, len_file, file_num, file_len) {
+function upload_file(url, filedata, chunk_id, len_url, len_file, file_num, file_len, path) {
     var xhr = new XMLHttpRequest();
     xhr.upload.addEventListener("progress", function (e) {
 
@@ -437,7 +446,7 @@ function upload_file(url, filedata, chunk_id, len_url, len_file, file_num, file_
                     method: "POST",
                     data: {
                         'name': $("#uploadInput")[0].files[file_num].name,
-                        'path': currentDirId,
+                        'path': path,
                         'uploadid': uploadid,
                         'size': len_file,
                         'items': JSON.stringify(item)
@@ -445,8 +454,8 @@ function upload_file(url, filedata, chunk_id, len_url, len_file, file_num, file_
                     url: '/api/upload_complete/',
                     success: function (data) {
                         window.onunload=null;
-                        list_files();
-                        make_upload($("#uploadInput")[0].files.length, file_num+1);
+                        list_files("", currentPath);
+                        make_upload($("#uploadInput")[0].files.length, file_num+1, path);
                     },
                     error: function (data) {
                         showSnackBar("An error occured, please try again later")
@@ -468,7 +477,7 @@ function remove_file(items, file_len, file_num) {
                 removed++;
                 showSnackBar("삭제중...");
                 $("#removed"+file_num).html("deleted");
-                list_files();
+                list_files("", currentPath);
             },
             error: function (data) {
                 showSnackBar("An error occured, please try again later")
@@ -536,7 +545,7 @@ function findCheckedItems() {
 
 $(document).on('click', '#uploadBtn', async function () {
 
-    make_upload($("#uploadInput")[0].files.length, 0);
+    make_upload($("#uploadInput")[0].files.length, 0, currentPath);
 });
 
 $(document).on('click', '#createBtn', async function () {
@@ -545,13 +554,13 @@ $(document).on('click', '#createBtn', async function () {
         method: "POST",
         data: {
             'name': $("#directoryName").val(),
-            'path': currentDirId
+            'path': currentPath
         },
         url: '/api/create/',
         success: function (data) {
             $("#createDirectoryModal").modal("toggle");
             showSnackBar("폴더 생성완료");
-            list_files();
+            list_files("", currentPath);
         },
         error: function (data) {
             showSnackBar("An error occured, please try again later")
@@ -587,7 +596,7 @@ $(document).on('click', '#star', function () {
     $.ajax({
         method: "POST",
         data: {
-            'path': currentDirId + name
+            'path': currentPath + name
         },
         url: '/api/favorite/',
         success: function (data) {
@@ -610,7 +619,7 @@ $(document).on('click', '#star', function () {
 $(document).on('click', '#stars', function () {
     if(view_share)
         window.history.pushState("", "", '/list/');
-
+    view_share=false;
     $.ajax({
         method: "GET",
         url: '/api/listfavorite/',
@@ -691,7 +700,7 @@ $(document).on('input','#search', async function() {
             data: {
                 'name': $("#search").val()
             },
-            url: '/api/search'+currentDirId,
+            url: '/api/search'+currentPath,
             success: function (data) {
                  load_files($("#search").val(), data['items'])
             },
@@ -700,12 +709,13 @@ $(document).on('input','#search', async function() {
             }
         });
     } else {
-        list_files();
+        list_files("", currentPath);
     }
 });
 
 $(document).on('click','#shareBtn', function() {
     var path;
+
     var items = findCheckedItems();
     shared = 0;
     for(var i = 0; i<items.length;i++) {
@@ -714,15 +724,11 @@ $(document).on('click','#shareBtn', function() {
 });
 
 $(document).on('click','#recent', function() {
-    if(view_share)
-        window.history.pushState("", "", '/list/');
     view_recent = true;
     list_files("modified");
 });
 
 $(document).on('click','#added', function() {
-    if(view_share)
-        window.history.pushState("", "", '/list/');
     view_recent = true;
     list_files("created");
 });
@@ -746,3 +752,12 @@ $(document).on('hide.bs.modal', '#deleteModal', function() {
     $("#deleteditem").html("");
 });
 
+window.onpopstate = function(event) {
+    if(window.location.pathname=="/listshare/") {
+        list_share();
+    }
+    else if(!view_recent){
+        list_files('',window.location.pathname.substring(5));
+    }
+  console.log("location: " + document.location + ", state: " + JSON.stringify(event.state));
+};

@@ -33,13 +33,13 @@
     </table>
 <script>
     var token = document.getElementById("token").value
-    currentDirId = document.getElementById("path").value
+    var currentPath = document.getElementById("path").value
     $.ajaxSetup({
         headers: {
             'Authorization': 'Bearer ' + token
         }
     })
-    list_files();
+    list_files("", currentPath);
 </script>
 </main>
 {% endblock %}
