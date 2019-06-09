@@ -457,11 +457,9 @@ function remove_file(items, file_len, file_num) {
             url: '/api/delete/',
             success: function (data) {
                 removed++;
-                showSnackBar("삭제중..." + (file_len-removed) + "개 파일 남음");
+                showSnackBar("삭제중...");
                 $("#removed"+file_num).html("deleted");
                 list_files();
-                if(removed == file_num)
-                    showSnackBar("삭제완료");
             },
             error: function (data) {
                 showSnackBar("An error occured, please try again later")
@@ -633,10 +631,12 @@ $(document).on('change','.check',function() {
 
     var filename = $(this).closest('.hover').find('#path').html();
     var checked = $(this).prop('checked');  // checked 상태 (true, false)
-
+    checked_items = [];
+    $('input[type="checkbox"]:checked').each(function() {
+       checked_items.push($(this).closest(".hover").find("#path").html());
+    });
     if(checked)
     {
-        checked_items.push(filename);
         if(!view_share){
             $(".delete").attr("hidden",false);
             $(".download").attr("hidden",false);
@@ -648,9 +648,6 @@ $(document).on('change','.check',function() {
     else
     {
         $(this).attr("hidden",true)
-        var index = checked_items.indexOf(filename);
-        if(index > -1)
-            checked_items.splice(index, 1);
         if(checked_items.length==0){
             if(!view_share){
                 $(".delete").attr("hidden",true);
