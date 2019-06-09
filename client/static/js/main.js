@@ -635,9 +635,12 @@ function move_file(items, file_len, file_num, from, to) {
             url: '/api/move/',
             success: function (data) {
                 list_files('', currentPath);
+                closeSnackBar();
+                showSnackBar("이동완료");
             },
             error: function (data) {
                 goMainPage();
+                closeSnackBar();
                 showSnackBar(items[file_num] +"  이 작업은 허용되지 않습니다");
             }
         });
@@ -653,27 +656,12 @@ function copy_file(items, file_len, file_num, from, to) {
             url: '/api/copy/',
             success: function (data) {
                 list_files('', currentPath);
+                closeSnackBar();
+                showSnackBar("복사완료");
             },
             error: function (data) {
                 goMainPage();
-                showSnackBar(items[file_num] +"  이 작업은 허용되지 않습니다");
-            }
-        });
-}
-
-function copy_file(items, file_len, file_num, from, to) {
-        $.ajax({
-            method: "POST",
-            data: {
-                'from_path': items[file_num],
-                'to_path': to
-            },
-            url: '/api/copy/',
-            success: function (data) {
-                list_files('', currentPath);
-            },
-            error: function (data) {
-                goMainPage();
+                closeSnackBar();
                 showSnackBar(items[file_num] +"  이 작업은 허용되지 않습니다");
             }
         });
@@ -939,6 +927,7 @@ $(document).on('click','.copy', function() {
 });
 
 $(document).on('click','#moveBtn', function() {
+    showPermanantSnackBar("이동중..");
     var path = $("#movePath").html().substring(5);
     var items = findCheckedItems();
     removed = 0;
@@ -949,6 +938,7 @@ $(document).on('click','#moveBtn', function() {
 });
 
 $(document).on('click','#copyBtn', function() {
+    showPermanantSnackBar("복사중..");
     var path = $("#copyPath").html().substring(5);
     var items = findCheckedItems();
     removed = 0;
