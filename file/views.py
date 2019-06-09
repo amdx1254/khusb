@@ -374,13 +374,13 @@ class FileCopyApi(APIView):
                                     size=from_object.size, path=request.data['to_path'] + name + "/")
                     new_object = File.objects.get(owner=request.user, parent=to_parent_object, is_directory=from_object.is_directory,
                                     size=from_object.size, path=request.data['to_path'] + name + "/")
-                    print(name)
                     copy_files(request.user, from_object, new_object, name, request.data['to_path'],
                                from_object.path)
                 else:
                     serializer.save(owner=request.user, parent=to_parent_object, is_directory=from_object.is_directory,
                                     size=from_object.size, path=request.data['to_path'] + name)
-                increase_user_size(request.user, from_object.size)
+                    increase_user_size(request.user, from_object.size)
+
                 return Response(serializer.data, status=status.HTTP_200_OK)
 
         except File.DoesNotExist:
