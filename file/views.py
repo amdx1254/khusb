@@ -50,6 +50,24 @@ def increase_user_size(user, size):
         obj.cur_size = obj.cur_size + int(size)
         obj.save()
 
+
+def copy_files(user, object, parent, origin_name, to_path, from_path):
+    for file in File.objects.filter(parent=object):
+        origin_path = file.path
+        copied_path = to_path + origin_name + "/" + origin_path[origin_path.find(from_path)+len(from_path):]
+        copy_object(str(user.id), origin_path, copied_path)
+        new_object = {'name': file.name, 'is_directory': file.is_directory, 'path':copied_path}
+        serializer = FileSerializer(data=new_object)
+        if (serializer.is_valid()):
+            serializer.save(owner=user, parent=parent, is_directory=file.is_directory,
+                            size=file.size, path=copied_path)
+            if(not file.is_directory):
+                increase_user_size(user, file.size)
+        if(file.is_directory):
+            new_object = File.objects.get(owner=user, parent=parent, is_directory=file.is_directory, size=file.size, path=copied_path)
+            copy_files(user, file, new_object, origin_name, to_path, from_path)
+
+
 # Create your views here.
 # CreateAPIView를 통해 post를 통해 입력 받은 값을 자동으로 AccountSerializer를 통해 생성시켜줌.
 class FolderCreateApi(APIView):
@@ -321,22 +339,48 @@ class FileCopyApi(APIView):
             from_object = File.objects.get(owner=request.user, path=request.data['from_path'])
             to_parent_object = File.objects.get(owner=request.user, path=request.data['to_path'])
             tmp = to_parent_object
-
+            origin_name = from_object.name
             while(not tmp == None):
                 if(tmp == from_object):
                     return Response({"status": "400", "error": "Cannot copy"}, status=status.HTTP_400_BAD_REQUEST)
                 tmp = tmp.parent
 
-            increase_parent_size(to_parent_object, from_object.size)
+            found = False
+            name = origin_name
+            i = 1
+            while(not found):
+                if(from_object.is_directory):
+                    duplicated = File.objects.filter(owner=request.user, path=request.data['to_path'] + name + "/")
+                else:
+                    duplicated = File.objects.filter(owner=request.user, path=request.data['to_path'] + name)
+                if (len(duplicated) > 0):
+                    name = origin_name + " ("+str(i)+")"
+                    i += 1
+                else:
+                    found = True
 
-            copy_object(str(request.user.id), request.data['from_path'], request.data['to_path'] + from_object.name)
-            new_object = {'name': from_object.name, 'is_directory': from_object.is_directory, 'path': request.data['to_path'] + from_object.name}
+            increase_parent_size(to_parent_object, from_object.size)
+            if(from_object.is_directory):
+                copy_object(str(request.user.id), request.data['from_path'], request.data['to_path'] + name + "/")
+                new_object = {'name': name, 'is_directory': from_object.is_directory, 'path': request.data['to_path'] + name + "/"}
+            else:
+                copy_object(str(request.user.id), request.data['from_path'], request.data['to_path'] + name)
+                new_object = {'name': name, 'is_directory': from_object.is_directory, 'path': request.data['to_path'] + name}
             serializer = FileSerializer(data=new_object)
 
             if (serializer.is_valid()):
-                serializer.save(owner=request.user, parent=to_parent_object, is_directory=False, size=from_object.size, path=request.data['to_path'] + from_object.name)
-                request.user.cur_size = request.user.cur_size + from_object.size
-                request.user.save()
+                if (from_object.is_directory):
+                    serializer.save(owner=request.user, parent=to_parent_object, is_directory=from_object.is_directory,
+                                    size=from_object.size, path=request.data['to_path'] + name + "/")
+                    new_object = File.objects.get(owner=request.user, parent=to_parent_object, is_directory=from_object.is_directory,
+                                    size=from_object.size, path=request.data['to_path'] + name + "/")
+                    print(name)
+                    copy_files(request.user, from_object, new_object, name, request.data['to_path'],
+                               from_object.path)
+                else:
+                    serializer.save(owner=request.user, parent=to_parent_object, is_directory=from_object.is_directory,
+                                    size=from_object.size, path=request.data['to_path'] + name)
+                increase_user_size(request.user, from_object.size)
                 return Response(serializer.data, status=status.HTTP_200_OK)
 
         except File.DoesNotExist:
@@ -349,21 +393,53 @@ class FileMoveApi(APIView):
 
     def post(self, request):
         try:
+
             from_object = File.objects.get(owner=request.user, path=request.data['from_path'])
             to_parent_object = File.objects.get(owner=request.user, path=request.data['to_path'])
+            origin_name = from_object.name
             tmp = to_parent_object
             while(not tmp == None):
                 if(tmp == from_object):
                     return Response({"status": "400", "error": "Cannot move"}, status=status.HTTP_400_BAD_REQUEST)
                 tmp = tmp.parent
 
+            found = False
+            name = origin_name
+            i = 1
+            while(not found):
+                if(from_object.is_directory):
+                    duplicated = File.objects.filter(owner=request.user, path=request.data['to_path'] + name + "/")
+                else:
+                    duplicated = File.objects.filter(owner=request.user, path=request.data['to_path'] + name)
+                if (len(duplicated) > 0):
+                    name = origin_name + " ("+str(i)+")"
+                    i += 1
+                else:
+                    found = True
+
+            if(from_object.is_directory):
+                childrens = from_object.get_all_children()
+                for child in childrens:
+                    if(child != from_object):
+                        origin_path = child.path
+                        moved_path = request.data['to_path'] + name + "/" + origin_path[origin_path.find(from_object.path) + len(from_object.path):]
+                        child.path = moved_path
+                        child.save()
+                        move_object(str(request.user.id), origin_path, moved_path)
+
             reduce_parent_size(from_object.parent, from_object.size)
             increase_parent_size(to_parent_object, from_object.size)
-
-            from_object.path = request.data['to_path'] + from_object.name
+            if(from_object.is_directory):
+                from_object.path = request.data['to_path'] + name + "/"
+            else:
+                from_object.path = request.data['to_path'] + name
+            from_object.name = name
             from_object.parent = to_parent_object
             from_object.save()
-            move_object(str(request.user.id), request.data['from_path'], request.data['to_path'] + from_object.name)
+            if(from_object.is_directory):
+                move_object(str(request.user.id), request.data['from_path'], request.data['to_path'] + name + "/")
+            else:
+                move_object(str(request.user.id), request.data['from_path'], request.data['to_path'] + name )
             serializer = FileSerializer(from_object)
 
             return Response(serializer.data, status=status.HTTP_200_OK)
