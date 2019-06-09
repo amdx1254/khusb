@@ -539,7 +539,9 @@ function closeSnackBar() {
 function findCheckedItems() {
     var checked_items = [];
     $('input[type="checkbox"]:checked').each(function() {
-       checked_items.push($(this).closest(".hover").find("#path").html());
+        var item = $(this).closest(".hover").find("#path").html();
+        if(item != null)
+           checked_items.push(item);
     });
     return checked_items;
 }
