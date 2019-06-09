@@ -349,9 +349,11 @@ function make_upload(file_len, file_num) {
             success: function (data) {
                 urls = data['url'];
                 uploadid = data['uploadid'];
-                $("#uploadBtn").hide();
-                $("#abortBtn").removeAttr("hidden");
-
+                if(file_num==0){
+                    $("#uploadModal").modal('toggle');
+                    $("#uploadBtn").hide();
+                    $("#abortBtn").removeAttr("hidden");
+                }
             },
             error: function (data) {
                 showSnackBar("An error occured, please try again later")
@@ -547,7 +549,7 @@ function findCheckedItems() {
 }
 
 $(document).on('click', '#uploadBtn', async function () {
-    $("#uploadModal").modal('toggle');
+
     make_upload($("#uploadInput")[0].files.length, 0);
 });
 
