@@ -14,7 +14,8 @@ from rest_framework.permissions import IsAuthenticated
 from .file_operation import *
 from .utils import *
 import requests
-import json, datetime
+import json
+from django.utils import timezone
 from django.db import transaction
 
 # Create your views here.
@@ -53,15 +54,14 @@ class FolderListApi(APIView):
             sort = request.GET.get('recently','')
             directory = File.objects.get(owner=request.user, path=path)
             if(sort=='modified'):
-                files = File.objects.filter(owner=request.user).order_by('-modified')[:10]
+                files = File.objects.filter(owner=request.user, is_directory=False).order_by('-modified')[:10]
             elif(sort=='created'):
-                files = File.objects.filter(owner=request.user).order_by('-created')[:10]
+                files = File.objects.filter(owner=request.user, is_directory=False).order_by('-created')[:10]
             else:
                 files = File.objects.filter(owner=request.user, parent=directory).order_by('name')
         except File.DoesNotExist:
             return Response({"status": "404", "error": "Not Found"}, status=status.HTTP_404_NOT_FOUND)
         result = {}
-
         dir = FileSerializer(directory)
         result['available_size'] = request.user.max_size - request.user.cur_size
         result['used_size'] = request.user.cur_size
@@ -80,7 +80,7 @@ class FolderListApi(APIView):
             else:
                 if(file.path != '/' and not file.is_directory):
                     result['items'].append(ser.data)
-
+        print(len(result['items']))
         return Response(result, status=status.HTTP_200_OK)
 
 
@@ -201,7 +201,7 @@ class FileCreateCompleteApi(APIView):
             request.user.cur_size = request.user.cur_size - int(test[0].size)
             request.user.save()
             test[0].size = size
-            test[0].modified = datetime.datetime.now()
+            test[0].modified = timezone.now()
             test[0].save()
             tmp = directory
             while(not tmp == None):
@@ -224,7 +224,7 @@ class FileCreateCompleteApi(APIView):
                 tmp = directory
                 while(not tmp == None):
                     tmp.size = tmp.size+int(size)
-                    tmp.modified = datetime.datetime.now()
+                    tmp.modified = timezone.now()
                     tmp.save()
                     tmp = tmp.parent
                 complete_multipart_upload(str(request.user.id), filepath, UploadId, MultipartUpload)
