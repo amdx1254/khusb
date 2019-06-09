@@ -321,7 +321,8 @@ function make_upload(file_len, file_num) {
                         'uploadid': uploadid
             });
             closeSnackBar();
-
+            $("#uploadeditem").html("");
+            $("#uploadInput").val("");
             showSnackBar("업로드 중단");
             $("#uploadBtn").show();
             $("#abortBtn").attr("hidden",'');
@@ -408,8 +409,6 @@ function upload_file(url, filedata, chunk_id, len_url, len_file, file_num, file_
         $('#snackprogress').val(per);
         if(uploadaborted){
             xhr.abort();
-            $("#uploadeditem").html("");
-            $("#uploadInput").val("");
         }
     });
 
@@ -424,7 +423,7 @@ function upload_file(url, filedata, chunk_id, len_url, len_file, file_num, file_
             finished++;
             if (finished == len_url) {
                 window.onbeforeunload = null;
-                list_files();
+
                 $.ajax({
                     method: "POST",
                     data: {
@@ -437,6 +436,7 @@ function upload_file(url, filedata, chunk_id, len_url, len_file, file_num, file_
                     url: '/api/upload_complete/',
                     success: function (data) {
                         window.onunload=null;
+                        list_files();
                         make_upload($("#uploadInput")[0].files.length, file_num+1);
                     },
                     error: function (data) {
