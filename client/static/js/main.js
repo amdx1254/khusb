@@ -4,7 +4,6 @@ var uploadid;
 var item = {'Parts': []};
 var finished = 0;
 var uploaded_size = [];
-var checked_items = [];
 var parentDirId;
 var isfavorite = false;
 var view_share = false;
@@ -491,6 +490,7 @@ function share_file(items, file_len, file_num, email) {
 
 var downloaded = 0;
 function download_file(items, file_len, file_num) {
+        var checked_items = findCheckedItems();
         $.ajax({
             method: "GET",
             data: {
@@ -534,6 +534,14 @@ function closeSnackBar() {
     var x = document.getElementById("snackbar_download");
 
     x.className = x.className.replace("show", "hide");
+}
+
+function findCheckedItems() {
+    var checked_items = [];
+    $('input[type="checkbox"]:checked').each(function() {
+       checked_items.push($(this).closest(".hover").find("#path").html());
+    });
+    return checked_items;
 }
 
 $(document).on('click', '#uploadBtn', async function () {
@@ -631,10 +639,7 @@ $(document).on('change','.check',function() {
 
     var filename = $(this).closest('.hover').find('#path').html();
     var checked = $(this).prop('checked');  // checked 상태 (true, false)
-    checked_items = [];
-    $('input[type="checkbox"]:checked').each(function() {
-       checked_items.push($(this).closest(".hover").find("#path").html());
-    });
+    var checked_items = findCheckedItems();
     if(checked)
     {
         if(!view_share){
@@ -671,6 +676,7 @@ $(document).on('click','#allCheck',function() {
 
 $(document).on('click','#removeItem', function() {
     $('#deleteModal').modal();
+    var checked_items = findCheckedItems();
     var html="";
     for(var i=0;i<checked_items.length;i++) {
         html += "<tr class=\"hover\"><td style=\"text-align: left;\">"+checked_items[i]+"</td><td style='text-align: left;'><span id='removed"+i+"'></span></td></tr>";
@@ -681,7 +687,7 @@ $(document).on('click','#removeItem', function() {
 
 $(document).on('click','#deleteBtn', function() {
     var path;
-    var items = checked_items;
+    var items = findCheckedItems();
     removed = 0;
     $("#deleteModal").modal('toggle');
     for(var i = 0; i<items.length;i++) {
@@ -691,6 +697,7 @@ $(document).on('click','#deleteBtn', function() {
 
 $(document).on('click','#downloadItem', function() {
     $('#downloadModal').modal();
+    var checked_items = findCheckedItems();
     var html="";
     for(var i=0;i<checked_items.length;i++) {
         html += "<tr class=\"hover\"><td style=\"text-align: left;\">"+checked_items[i]+"</td><td style='text-align: left;'><span id='downloaded"+i+"'></span></td></tr>";
@@ -701,7 +708,7 @@ $(document).on('click','#downloadItem', function() {
 
 $(document).on('click','#downloadBtn', function() {
     var path;
-    var items = checked_items;
+    var items = findCheckedItems();
     downloaded = 0;
     for(var i = 0; i<items.length;i++) {
         download_file(items, items.length, i);
@@ -731,7 +738,7 @@ $(document).on('input','#search', async function() {
 
 $(document).on('click','#shareBtn', function() {
     var path;
-    var items = checked_items;
+    var items = findCheckedItems();
     shared = 0;
     for(var i = 0; i<items.length;i++) {
         share_file(items, items.length, i, $("#emailInput").val());
