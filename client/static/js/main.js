@@ -124,6 +124,14 @@ function list_files(recently) {
                     available_size = data['available_size'];
                     used_size = data['used_size'];
                     load_files('', data['items']);
+                    var checkeditems = findCheckedItems();
+                    if(checkeditems.length == 0){
+                        $(".delete").attr("hidden",true);
+                        $(".share").attr("hidden",true);
+                    } else {
+                        $(".delete").attr("hidden", false);
+                        $(".share").attr("hidden",false);
+                    }
                     printsize();
 
                 }
@@ -490,28 +498,6 @@ function share_file(items, file_len, file_num, email) {
         });
 }
 
-var downloaded = 0;
-function download_file(items, file_len, file_num) {
-        var checked_items = findCheckedItems();
-        $.ajax({
-            method: "GET",
-            data: {
-                'path': currentDirId + items[file_num]
-            },
-            url: '/api/download/'+checked_items[file_num],
-            success: function (data) {
-                window.location.href = 'http://127.0.0.1:8000/download/' + checked_items[downloaded];
-                downloaded++;
-                $("#downloaded"+file_num).html("downloaded");
-                if(downloaded == file_len)
-                    location.reload();
-            },
-            error: function (data) {
-                showSnackBar("An error occured, please try again later")
-            }
-        });
-}
-
 function showSnackBar(text) {
     // Get the snackbar DIV
     var x = document.getElementById("snackbar")
@@ -648,7 +634,6 @@ $(document).on('change','.check',function() {
     {
         if(!view_share){
             $(".delete").attr("hidden",false);
-            $(".download").attr("hidden",false);
             $(".share").attr("hidden",false);
         }
 
@@ -660,7 +645,6 @@ $(document).on('change','.check',function() {
         if(checked_items.length==0){
             if(!view_share){
                 $(".delete").attr("hidden",true);
-                $(".download").attr("hidden",true);
                 $(".share").attr("hidden",true);
             }
         }
@@ -696,26 +680,6 @@ $(document).on('click','#deleteBtn', function() {
     $("#deleteModal").modal('toggle');
     for(var i = 0; i<items.length;i++) {
         remove_file(items, items.length, i);
-    }
-});
-
-$(document).on('click','#downloadItem', function() {
-    $('#downloadModal').modal();
-    var checked_items = findCheckedItems();
-    var html="";
-    for(var i=0;i<checked_items.length;i++) {
-        html += "<tr class=\"hover\"><td style=\"text-align: left;\">"+checked_items[i]+"</td><td style='text-align: left;'><span id='downloaded"+i+"'></span></td></tr>";
-    }
-    $('#downloadModal').find("#downloaditem").html(html);
-
-});
-
-$(document).on('click','#downloadBtn', function() {
-    var path;
-    var items = findCheckedItems();
-    downloaded = 0;
-    for(var i = 0; i<items.length;i++) {
-        download_file(items, items.length, i);
     }
 });
 
