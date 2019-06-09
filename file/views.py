@@ -18,6 +18,38 @@ import json
 from django.utils import timezone
 from django.db import transaction
 
+
+def reduce_parent_size(parent, size):
+    with transaction.atomic():
+        tmp = parent
+        while(not tmp == None):
+            obj = File.objects.select_for_update().get(id=tmp.id)
+            obj.size = obj.size - int(size)
+            obj.save()
+            tmp = tmp.parent
+
+
+def increase_parent_size(parent, size):
+    with transaction.atomic():
+        tmp = parent
+        while(not tmp == None):
+            obj = File.objects.select_for_update().get(id=tmp.id)
+            obj.size = obj.size + int(size)
+            obj.save()
+            tmp = tmp.parent
+
+def reduce_user_size(user, size):
+    with transaction.atomic():
+        obj = User.objects.select_for_update().get(email=user.email)
+        obj.cur_size = obj.cur_size - int(size)
+        obj.save()
+
+def increase_user_size(user, size):
+    with transaction.atomic():
+        obj = User.objects.select_for_update().get(email=user.email)
+        obj.cur_size = obj.cur_size + int(size)
+        obj.save()
+
 # Create your views here.
 # CreateAPIView를 통해 post를 통해 입력 받은 값을 자동으로 AccountSerializer를 통해 생성시켜줌.
 class FolderCreateApi(APIView):
@@ -192,23 +224,22 @@ class FileCreateCompleteApi(APIView):
 
 
         if len(test)>0:
-            tmp = directory
-            while(not tmp == None):
-                tmp.size = tmp.size-int(test[0].size)
-                tmp.save()
-                tmp=tmp.parent
-            request.user.cur_size = request.user.cur_size - int(test[0].size)
-            request.user.save()
+            try:
+                reduce_parent_size(directory, test[0].size)
+                reduce_user_size(request.user, test[0].size)
+            except:
+                return Response({"status": "400", "error": "An error occured"}, status=status.HTTP_400_BAD_REQUEST)
+
             test[0].size = size
             test[0].modified = timezone.now()
             test[0].save()
-            tmp = directory
-            while(not tmp == None):
-                tmp.size = tmp.size+int(test[0].size)
-                tmp.save()
-                tmp=tmp.parent
-            request.user.cur_size = request.user.cur_size + int(test[0].size)
-            request.user.save()
+
+            try:
+                increase_parent_size(directory, test[0].size)
+                increase_user_size(request.user, test[0].size)
+            except:
+                return Response({"status": "400", "error": "An error occured"}, status=status.HTTP_400_BAD_REQUEST)
+
             complete_multipart_upload(str(request.user.id), filepath, UploadId, MultipartUpload)
             serializer = FileSerializer(test[0])
             result['item'] = serializer.data
@@ -217,15 +248,12 @@ class FileCreateCompleteApi(APIView):
             serializer = FileSerializer(data=request.data)
             if(serializer.is_valid()):
                 serializer.save(owner=request.user, parent=directory, is_directory=False, size=size, path=filepath)
+                try:
+                    increase_parent_size(directory, size)
+                    increase_user_size(request.user, size)
+                except:
+                    return Response({"status": "400", "error": "An error occured"}, status=status.HTTP_400_BAD_REQUEST)
 
-                request.user.cur_size = request.user.cur_size+int(size)
-                request.user.save()
-                tmp = directory
-                while(not tmp == None):
-                    tmp.size = tmp.size+int(size)
-                    tmp.modified = timezone.now()
-                    tmp.save()
-                    tmp = tmp.parent
                 complete_multipart_upload(str(request.user.id), filepath, UploadId, MultipartUpload)
                 result['item'] = serializer.data
 
@@ -258,30 +286,8 @@ class FileDeleteApi(APIView):
                 return Response({"status": "400", "error": "Cannot remove root directory"},
                                 status=status.HTTP_400_BAD_REQUEST)
             try:
-                with transaction.atomic():
-                    user = User.objects.select_for_update().get(email=request.user.email)
-                    user.cur_size = user.cur_size - int(object.size)
-                    user.save()
-            except:
-                return Response({"status": "400", "error": "An error occured"}, status=status.HTTP_400_BAD_REQUEST)
-            """
-            request.user.cur_size = request.user.cur_size-int(object.size)
-            request.user.save()
-            tmp=object.parent
-            """
-            try:
-                tmp = object.parent
-                while(not tmp==None):
-
-                    with transaction.atomic():
-                        direc = File.objects.select_for_update().get(owner=request.user,path=tmp.path)
-                        direc.size = direc.size-int(object.size)
-                        direc.save()
-                    """
-                    tmp.size = tmp.size-int(object.size)
-                    tmp.save()
-                    """
-                    tmp=tmp.parent
+                reduce_user_size(request.user, object.size)
+                reduce_parent_size(object.parent, object.size)
             except:
                 return Response({"status": "400", "error": "An error occured"}, status=status.HTTP_400_BAD_REQUEST)
             serializer = FileSerializer(object)
@@ -321,11 +327,7 @@ class FileCopyApi(APIView):
                     return Response({"status": "400", "error": "Cannot copy"}, status=status.HTTP_400_BAD_REQUEST)
                 tmp = tmp.parent
 
-            tmp = to_parent_object
-            while(not tmp == None):
-                tmp.size = tmp.size+from_object.size
-                tmp.save()
-                tmp = tmp.parent
+            increase_parent_size(to_parent_object, from_object.size)
 
             copy_object(str(request.user.id), request.data['from_path'], request.data['to_path'] + from_object.name)
             new_object = {'name': from_object.name, 'is_directory': from_object.is_directory, 'path': request.data['to_path'] + from_object.name}
@@ -339,7 +341,8 @@ class FileCopyApi(APIView):
 
         except File.DoesNotExist:
             return Response({"status": "404", "error": "Not Found"}, status=status.HTTP_404_NOT_FOUND)
-
+        except:
+            return Response({"status": "400", "error": "An error occured"}, status=status.HTTP_400_BAD_REQUEST)
 
 class FileMoveApi(APIView):
     permission_classes = (IsAuthenticated, )
@@ -354,17 +357,8 @@ class FileMoveApi(APIView):
                     return Response({"status": "400", "error": "Cannot move"}, status=status.HTTP_400_BAD_REQUEST)
                 tmp = tmp.parent
 
-            tmp = from_object.parent
-            while(not tmp == None):
-                tmp.size = tmp.size-from_object.size
-                tmp.save()
-                tmp = tmp.parent
-
-            tmp = to_parent_object
-            while(not tmp == None):
-                tmp.size = tmp.size+from_object.size
-                tmp.save()
-                tmp = tmp.parent
+            reduce_parent_size(from_object.parent, from_object.size)
+            increase_parent_size(to_parent_object, from_object.size)
 
             from_object.path = request.data['to_path'] + from_object.name
             from_object.parent = to_parent_object
@@ -376,6 +370,9 @@ class FileMoveApi(APIView):
 
         except File.DoesNotExist:
             return Response({"status": "404", "error": "Not Found"}, status=status.HTTP_404_NOT_FOUND)
+
+        except:
+            return Response({"status": "400", "error": "An error occured"}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class FileFavoriteApi(APIView):
