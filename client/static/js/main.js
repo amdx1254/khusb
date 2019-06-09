@@ -321,8 +321,7 @@ function make_upload(file_len, file_num) {
                         'uploadid': uploadid
             });
             closeSnackBar();
-            $("#uploadeditem").html("");
-            $("#uploadInput").val("");
+
             showSnackBar("업로드 중단");
             $("#uploadBtn").show();
             $("#abortBtn").attr("hidden",'');
@@ -409,6 +408,8 @@ function upload_file(url, filedata, chunk_id, len_url, len_file, file_num, file_
         $('#snackprogress').val(per);
         if(uploadaborted){
             xhr.abort();
+            $("#uploadeditem").html("");
+            $("#uploadInput").val("");
         }
     });
 
