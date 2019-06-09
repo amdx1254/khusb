@@ -62,6 +62,10 @@ $(document).ready(function () {
     });
 });
 
+function goMainPage() {
+    window.history.pushState("", "", '/list/');
+    list_files('','/');
+}
 
 function printsize() {
     var kb = 1024;
@@ -111,7 +115,9 @@ function byteTosize(byte){
 
 function list_files(recently, path) {
     currentPath = path;
+    var ppath = "/"
     var url = '/api/list'+path;
+    var html = "/"+"<a style=\"cursor: pointer;\" onclick=\"list_files('','"+ppath+"'); window.history.pushState('', '', '/list" + ppath + "');\">HOME</a>" + "/";
     view_share = false;
     if(recently != ""){
         url = "/api/list?recently="+recently;
@@ -120,7 +126,16 @@ function list_files(recently, path) {
     {
         isfavorite = false;
         view_recent = false;
+        var splited_path = path.split('/');
+        for(var i = 1;i < splited_path.length-1; i++)
+        {
+            ppath += splited_path[i]+"/"
+            html += "<a style=\"cursor: pointer;\" onclick=\"list_files('','"+ppath+"'); window.history.pushState('', '', '/list" + ppath + "');\">"+ splited_path[i] +"</a>" + "/";
+        }
+
+
     }
+    $("#current_path").html(html);
     $.ajax({
             method: "GET",
             url: url,
@@ -146,6 +161,7 @@ function list_files(recently, path) {
                     load_files(recently, data['items'], path);
             },
             error: function (data) {
+                goMainPage();
                 showSnackBar("An error occured, please try again later")
             }
     });
@@ -170,6 +186,7 @@ function list_share() {
             printsize();
         },
         error: function (data) {
+            goMainPage();
             showSnackBar("An error occured, please try again later")
         },
         async: false
@@ -374,6 +391,7 @@ function make_upload(file_len, file_num, path) {
             },
             error: function (data) {
                 showSnackBar("An error occured, please try again later")
+                goMainPage();
             }
         }).done(function () {
             finished = 0;
@@ -458,6 +476,7 @@ function upload_file(url, filedata, chunk_id, len_url, len_file, file_num, file_
                         make_upload($("#uploadInput")[0].files.length, file_num+1, path);
                     },
                     error: function (data) {
+                        goMainPage();
                         showSnackBar("An error occured, please try again later")
                     }
                 });
@@ -480,6 +499,7 @@ function remove_file(items, file_len, file_num) {
                 list_files("", currentPath);
             },
             error: function (data) {
+                goMainPage();
                 showSnackBar("An error occured, please try again later")
             }
         });
@@ -563,6 +583,7 @@ $(document).on('click', '#createBtn', async function () {
             list_files("", currentPath);
         },
         error: function (data) {
+            goMainPage();
             showSnackBar("An error occured, please try again later")
         }
     });
@@ -603,6 +624,7 @@ $(document).on('click', '#star', function () {
             result = data;
         },
         error: function (data) {
+            goMainPage();
             showSnackBar("An error occured, please try again later")
         },
         async: false
@@ -617,8 +639,7 @@ $(document).on('click', '#star', function () {
 });
 
 $(document).on('click', '#stars', function () {
-    if(view_share)
-        window.history.pushState("", "", '/list/');
+    window.history.pushState("", "", '/list/');
     view_share=false;
     $.ajax({
         method: "GET",
@@ -628,6 +649,7 @@ $(document).on('click', '#stars', function () {
             load_files("",data['items']);
         },
         error: function (data) {
+            goMainPage();
             showSnackBar("An error occured, please try again later")
         },
         async: false
@@ -705,6 +727,7 @@ $(document).on('input','#search', async function() {
                  load_files($("#search").val(), data['items'])
             },
             error: function (data) {
+                goMainPage();
                 showSnackBar("An error occured, please try again later")
             }
         });
