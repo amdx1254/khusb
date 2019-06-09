@@ -500,7 +500,7 @@ function download_file(items, file_len, file_num) {
             },
             url: '/api/download/'+checked_items[file_num],
             success: function (data) {
-                window.location = 'http://127.0.0.1:8000/download/' + checked_items[downloaded];
+                window.location.href = 'http://127.0.0.1:8000/download/' + checked_items[downloaded];
                 downloaded++;
                 $("#downloaded"+file_num).html("downloaded");
                 if(downloaded == file_len)
