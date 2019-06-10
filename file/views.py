@@ -2,7 +2,6 @@ from django.shortcuts import render
 from django.conf import settings
 from rest_framework import generics, permissions
 from rest_framework.views import APIView, Response
-from .permissions import IsOwnerOrReadOnly
 from account.models import User
 from .models import File, Share
 from .serializers import FileSerializer, ShareSerializer

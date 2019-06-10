@@ -35,7 +35,7 @@
 
 </main>
     <script>
-    var token = document.getElementById("token").value
+    var token = getCookie("khusb_token");
     currentDirId = document.getElementById("path").value
     $.ajaxSetup({
         headers: {

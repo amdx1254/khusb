@@ -13,7 +13,11 @@ var available_size;
 var used_size
 var uploadaborted = false;
 
-
+function getCookie(name) {
+  var value = "; " + document.cookie;
+  var parts = value.split("; " + name + "=");
+  if (parts.length == 2) return parts.pop().split(";").shift();
+}
 
 $(document).ready(function () {
     //Show contextmenu:
@@ -142,11 +146,13 @@ function list_files(recently, path) {
             method: "GET",
             url: url,
             success: function (data) {
+                $(".uname1").html("<a>"+data['username']+"</a>")
                 if(recently == "")
                 {
                     parentPath = data['parent'];
                     available_size = data['available_size'];
                     used_size = data['used_size'];
+
                     load_files('', data['items'], path);
                     var checkeditems = findCheckedItems();
                     if(checkeditems.length == 0){
@@ -160,7 +166,10 @@ function list_files(recently, path) {
 
                 }
                 else
+                {
+                    $(".uname1").html("<a>"+data['username']+"</a>")
                     load_files(recently, data['items'], path);
+                }
             },
             error: function (data) {
                 goMainPage();
@@ -180,6 +189,7 @@ function list_share() {
         method: "GET",
         url: loc,
         success: function (data) {
+            $(".uname1").html("<a>"+data['username']+"</a>")
             parentPath = data['parent'];
             file_list = data['items'];
             load_files("",file_list);
@@ -205,6 +215,7 @@ function list_do_share() {
         method: "GET",
         url: loc,
         success: function (data) {
+            $(".uname1").html("<a>"+data['username']+"</a>")
             parentPath = data['parent'];
             file_list = data['items'];
             load_files("",file_list);

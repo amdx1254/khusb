@@ -5,15 +5,15 @@ from django.conf import settings
 from rest_framework_jwt.settings import api_settings
 from django.contrib.auth import logout
 from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.decorators import permission_required
 jwt_payload_handler = api_settings.JWT_PAYLOAD_HANDLER
 jwt_encode_handler = api_settings.JWT_ENCODE_HANDLER
 
 def check_auth(request):
-    if(not 'token' in request.session):
+    if(request.COOKIES.get('khusb_token') == None):
         return False
-    r = requests.post('http://127.0.0.1:8000/api/verify/', data={'token' : request.session['token']}).json()
+    r = requests.post('http://127.0.0.1:8000/api/verify/', data={'token' : request.COOKIES.get('khusb_token')}).json()
     if('non_field_errors' in r):
-        del request.session['token']
         return False
     return True
 
@@ -41,9 +41,10 @@ def CreateAccountView(request):
             r = requests.post('http://127.0.0.1:8000/api/login/',
                               data={'email': email, 'password': password}).json()
             print(r)
-            request.session['token'] = r['token']
+            response = redirect('list-view')
+            response.set_cookie('khusb_token',r['token'])
 
-            return redirect('list-view')
+            return response
 
         elif(r.text.find("A user with that username")>0):
             return render(request, 'client/register.html', {'data': '존재하는 ID 입니다.'})
@@ -64,8 +65,9 @@ def SocialLoginView(request):
         print(request.user.email)
         payload = jwt_payload_handler(request.user)
         token = jwt_encode_handler(payload)
-        request.session['token'] = token
-        return redirect('list-view')
+        response = redirect('list-view')
+        response.set_cookie('khusb_token',token)
+        return response
 
 
 def LoginView(request):
@@ -73,8 +75,6 @@ def LoginView(request):
         return redirect('list-view')
 
     if(request.method == 'GET'):
-        if('token' in request.session):
-            return redirect('list-view')
         return render(request, 'client/login.html')
 
     if(request.method == 'POST'):
@@ -84,21 +84,22 @@ def LoginView(request):
 
         if('non_field_errors' in r):
             return render(request, 'client/login.html', {'data':'일치하는 정보가 없습니다'})
-        request.session['token']=r['token']
-
-        return redirect('list-view')
+        response = redirect('list-view')
+        response.set_cookie('khusb_token',r['token'], max_age=86400)
+        return response
 
 
 @csrf_exempt
 def listView(request,path='/'):
+    if(not check_auth(request)):
+        response = redirect('user-login')
+        response.delete_cookie('khusb_token')
+        return response
     if(path!='/'):
         path='/'+path+"/"
-    if(not check_auth(request)):
-        return redirect('user-login')
     if(request.method == 'GET'):
         r = {}
         r['path'] = path
-        r['token']=request.session['token']
         r['username'] = request.user.username
         return render(request, 'client/main.html', r)
 
@@ -106,11 +107,12 @@ def listView(request,path='/'):
 @csrf_exempt
 def shareView(request):
     if(not check_auth(request)):
-        return redirect('user-login')
+        response = redirect('user-login')
+        response.delete_cookie('khusb_token')
+        return response
     if(request.method == 'GET'):
         r = {}
         r['path'] = "/Shared Folder"
-        r['token'] = request.session['token']
         r['username'] = request.user.username
         return render(request, 'client/share.html', r)
 
@@ -118,11 +120,12 @@ def shareView(request):
 @csrf_exempt
 def shareDoneView(request):
     if(not check_auth(request)):
-        return redirect('user-login')
+        response = redirect('user-login')
+        response.delete_cookie('khusb_token')
+        return response
     if(request.method == 'GET'):
         r = {}
         r['path'] = "/Shared Folder"
-        r['token'] = request.session['token']
         r['username'] = request.user.username
         return render(request, 'client/listsharedone.html', r)
 
@@ -130,7 +133,9 @@ def shareDoneView(request):
 def DownloadView(request, path):
     path = '/'+path
     if(not check_auth(request)):
-        return redirect('user-login')
+        response = redirect('user-login')
+        response.delete_cookie('khusb_token')
+        return response
     if(request.method == 'GET'):
         error=''
         if 'error' in request.GET:
@@ -138,9 +143,9 @@ def DownloadView(request, path):
         id = request.GET.get('id','')
         if(id != ''):
             r = requests.get('http://127.0.0.1:8000/api/downloadshare/?id='+id,
-                             headers={'Authorization': 'Bearer ' + request.session['token']}).json()
+                             headers={'Authorization': 'Bearer ' + request.COOKIES.get('khusb_token')}).json()
         else:
-            r = requests.get('http://127.0.0.1:8000/api/download'+path, headers={'Authorization': 'Bearer '+ request.session['token'] }).json()
+            r = requests.get('http://127.0.0.1:8000/api/download'+path, headers={'Authorization': 'Bearer '+ request.COOKIES.get('khusb_token')}).json()
         print("DOWNLOADED",r)
         if('error' in r):
             return redirect('list-view')
@@ -149,4 +154,6 @@ def DownloadView(request, path):
 
 def LogoutView(request):
     logout(request)
-    return redirect('user-login')
+    response = redirect('user-login')
+    response.delete_cookie('khusb_token')
+    return response
