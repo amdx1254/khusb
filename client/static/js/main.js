@@ -122,30 +122,28 @@ function list_files(recently, path) {
     currentPath = path;
     var ppath = "/"
     var url = '/api/list'+path;
-    var html = "/"+"<a style=\"cursor: pointer;\" onclick=\"list_files('','"+ppath+"'); window.history.pushState('', '', '/list" + ppath + "');\">HOME</a>" + "/";
-    view_share = false;
-    view_share_done = false;
-    if(recently != ""){
-        url = "/api/list?recently="+recently;
-        window.history.pushState("", "", '/list/');
-    } else
-    {
-        isfavorite = false;
-        view_recent = false;
-        var splited_path = path.split('/');
-        for(var i = 1;i < splited_path.length-1; i++)
-        {
-            ppath += splited_path[i]+"/"
-            html += "<a style=\"cursor: pointer;\" onclick=\"list_files('','"+ppath+"'); window.history.pushState('', '', '/list" + ppath + "');\">"+ splited_path[i] +"</a>" + "/";
-        }
 
-
-    }
-    $("#current_path").html(html);
     $.ajax({
             method: "GET",
             url: url,
             success: function (data) {
+                var html = "/"+"<a style=\"cursor: pointer;\" onclick=\"list_files('','"+ppath+"'); window.history.pushState('', '', '/list" + ppath + "');\">HOME</a>" + "/";
+                view_share = false;
+                view_share_done = false;
+                if(recently != ""){
+                    url = "/api/list?recently="+recently;
+                    window.history.pushState("", "", '/list/');
+                } else
+                {
+                    isfavorite = false;
+                    view_recent = false;
+                    var splited_path = path.split('/');
+                    for(var i = 1;i < splited_path.length-1; i++) {
+                        ppath += splited_path[i] + "/"
+                        html += "<a style=\"cursor: pointer;\" onclick=\"list_files('','" + ppath + "'); window.history.pushState('', '', '/list" + ppath + "');\">" + splited_path[i] + "</a>" + "/";
+                    }
+                }
+                $("#current_path").html(html);
                 $(".uname1").html("<a>"+data['username']+"</a>")
                 if(recently == "")
                 {
@@ -158,9 +156,13 @@ function list_files(recently, path) {
                     if(checkeditems.length == 0){
                         $(".delete").attr("hidden",true);
                         $(".share").attr("hidden",true);
+                        $(".copy").attr("hidden",true);
+                        $(".move").attr("hidden",true);
                     } else {
                         $(".delete").attr("hidden", false);
                         $(".share").attr("hidden",false);
+                        $(".copy").attr("hidden",false);
+                        $(".move").attr("hidden",false);
                     }
                     printsize();
 
@@ -255,13 +257,20 @@ function dateToString(date) {
 }
 
 function load_files_modal(files, cur_path, parent_path, method) {
+    var ppath = "/";
+    var html = "/" + "<a style=\"cursor: pointer;\" onclick=\"list_modal('/','"+method+"'); \">HOME</a>" + "/";
+    var splited_path = cur_path.split('/');
+    for (var i = 1; i < splited_path.length - 1; i++) {
+        ppath += splited_path[i] + "/";
+        html += "<a style=\"cursor: pointer;\" onclick=\"list_modal('" + ppath + "','"+method+"');\">" + splited_path[i] + "</a>" + "/";
+    }
     if(method=="move")
     {
-        $("#movePath").html("/HOME"+cur_path);
+        $("#movePath").html(html);
         $("#movefiles").html("");
     }
     else{
-        $("#copyPath").html("/HOME"+cur_path);
+        $("#copyPath").html(html);
         $("#copyfiles").html("");
     }
 
