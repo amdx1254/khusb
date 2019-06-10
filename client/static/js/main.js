@@ -144,7 +144,6 @@ function list_files(recently, path) {
                     }
                 }
                 $("#current_path").html(html);
-                $(".uname1").html("<a>"+data['username']+"</a>")
                 if(recently == "")
                 {
                     parentPath = data['parent'];
@@ -169,7 +168,6 @@ function list_files(recently, path) {
                 }
                 else
                 {
-                    $(".uname1").html("<a>"+data['username']+"</a>")
                     load_files(recently, data['items'], path);
                 }
             },
@@ -191,7 +189,6 @@ function list_share() {
         method: "GET",
         url: loc,
         success: function (data) {
-            $(".uname1").html("<a>"+data['username']+"</a>")
             parentPath = data['parent'];
             file_list = data['items'];
             load_files("",file_list);
@@ -217,7 +214,6 @@ function list_do_share() {
         method: "GET",
         url: loc,
         success: function (data) {
-            $(".uname1").html("<a>"+data['username']+"</a>")
             parentPath = data['parent'];
             file_list = data['items'];
             load_files("",file_list);

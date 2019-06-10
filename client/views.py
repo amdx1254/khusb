@@ -3,7 +3,7 @@ import requests,json
 import urllib
 from django.conf import settings
 from rest_framework_jwt.settings import api_settings
-from django.contrib.auth import logout
+from django.contrib.auth import logout, authenticate, login
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import permission_required
 jwt_payload_handler = api_settings.JWT_PAYLOAD_HANDLER
@@ -80,10 +80,16 @@ def LoginView(request):
     if(request.method == 'POST'):
         email = request.POST['email']
         pwd = request.POST['password']
+
         r = requests.post('http://127.0.0.1:8000/api/login/', data={'email':email,'password':pwd}).json()
 
         if('non_field_errors' in r):
             return render(request, 'client/login.html', {'data':'일치하는 정보가 없습니다'})
+
+        user = authenticate(email=email, password=pwd)
+        if(user != None):
+            print("LOGON")
+            login(request, user)
         response = redirect('list-view')
         response.set_cookie('khusb_token',r['token'], max_age=86400)
         return response
