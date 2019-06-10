@@ -545,7 +545,10 @@ function make_upload(file_len, file_num, path) {
 function upload_file(url, filedata, chunk_id, len_url, len_file, file_num, file_len, path) {
     var xhr = new XMLHttpRequest();
     xhr.upload.addEventListener("progress", function (e) {
-
+        if(uploadaborted){
+            xhr.abort();
+            return;
+        }
         uploaded_size[chunk_id - 1] = e.loaded;
         var sum = 0;
         for (var i = 0; i < len_url; i++) {
@@ -559,9 +562,7 @@ function upload_file(url, filedata, chunk_id, len_url, len_file, file_num, file_
         $('#size'+file_num).html(display_sum+'/'+display_len);
         showPermanantSnackBar((file_num+1) + "/" + file_len + "  " + $("#uploadInput")[0].files[file_num].name + "   " + "<progress max=\"100\" value=\"0\" id=\"snackprogress\"></progress>" + "   " + display_sum + "/" + display_len);
         $('#snackprogress').val(per);
-        if(uploadaborted){
-            xhr.abort();
-        }
+
     });
 
 
@@ -788,6 +789,7 @@ $(document).on('click', '#createBtn', async function () {
 $(document).on('change', '#uploadInput', function(){
 
     var files = $("#uploadInput")[0].files;
+    $("#uploadeditem").html("");
     var html="";
     for(var i=0;i<files.length;i++) {
         var size = files[i].size;
