@@ -122,35 +122,33 @@ function list_files(recently, path) {
     currentPath = path;
     var ppath = "/"
     var url = '/api/list'+path;
-
+    view_share = false;
+    view_share_done = false;
+    if(recently!=""){
+        url = "/api/list?recently="+recently;
+    } else {
+        isfavorite = false;
+        view_recent = false;
+    }
     $.ajax({
             method: "GET",
             url: url,
             success: function (data) {
                 var html = "/"+"<a style=\"cursor: pointer;\" onclick=\"list_files('','"+ppath+"'); window.history.pushState('', '', '/list" + ppath + "');\">HOME</a>" + "/";
-                view_share = false;
-                view_share_done = false;
-                if(recently != ""){
-                    url = "/api/list?recently="+recently;
-                    window.history.pushState("", "", '/list/');
-                } else
+
+                if(recently == "")
                 {
-                    isfavorite = false;
-                    view_recent = false;
                     var splited_path = path.split('/');
                     for(var i = 1;i < splited_path.length-1; i++) {
                         ppath += splited_path[i] + "/"
                         html += "<a style=\"cursor: pointer;\" onclick=\"list_files('','" + ppath + "'); window.history.pushState('', '', '/list" + ppath + "');\">" + splited_path[i] + "</a>" + "/";
                     }
-                }
-                $("#current_path").html(html);
-                if(recently == "")
-                {
                     parentPath = data['parent'];
                     available_size = data['available_size'];
                     used_size = data['used_size'];
 
                     load_files('', data['items'], path);
+                    $("#current_path").html(html);
                     var checkeditems = findCheckedItems();
                     if(checkeditems.length == 0){
                         $(".delete").attr("hidden",true);
@@ -301,7 +299,7 @@ function load_files_modal(files, cur_path, parent_path, method) {
 
 function load_files(value, files, cur_path) {
     var html = "";
-
+    var checked = findCheckedItems();
     $("#items").html("");
     var name;
     var modified;
@@ -309,6 +307,7 @@ function load_files(value, files, cur_path) {
     var path;
     var isDirectory;
     var file_id
+    var prev_checked= [];
     if (cur_path != "/" || isfavorite || view_share || view_recent || view_share_done) {
         html += "<tr class='hover'>";
         html += "<td></td>";
@@ -346,7 +345,10 @@ function load_files(value, files, cur_path) {
             else
                 displayname = path;
             html += "<tr class='hover'>";
-            html += "<td><input type='checkbox' class='check' hidden='false'/></td>";
+            html += "<td><input type='checkbox' id='checkbox"+(i+1)+"' class='check' hidden='false'/></td>";
+            if(checked.indexOf(path)>=0 && !isfavorite && !view_recent && !view_share){
+                prev_checked.push("#checkbox"+(i+1));
+            }
             if(view_share)
                 html += "<td style='text-align: left;'><a class='file' onclick=\"window.history.pushState('', '', '/listshare/?id=" + file_id + "'); list_share();\" style=\"cursor: pointer;\">" + displayname + "</a></td>";
             else if(view_share_done)
@@ -387,7 +389,10 @@ function load_files(value, files, cur_path) {
             else
                 displayname = path;
             html += "<tr class='hover'>";
-            html += "<td><input type='checkbox' class='check' hidden='false'/></td>";
+            html += "<td><input type='checkbox' id='checkbox"+(i+1)+"' class='check' hidden='false'/></td>";
+            if(checked.indexOf(path)>=0 && !isfavorite && !view_recent && !view_share){
+                prev_checked.push("#checkbox"+(i+1));
+            }
             if(view_share)
                 html += "<td style='text-align: left;'><a class='file' href='/download/share/?id=" + file_id + "'>" + displayname + "</a></td>";
             else
@@ -415,9 +420,10 @@ function load_files(value, files, cur_path) {
         }
 
     }
-
-
     $("#items").html(html);
+    for(c in prev_checked){
+        $(prev_checked[c]).attr('checked',true).change();
+    }
 }
 
 
