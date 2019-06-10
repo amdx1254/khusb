@@ -147,11 +147,11 @@ li a:hover {
 }
 
 .nav > rocket {
+  padding-left: 60px;
   grid-area: rocket;
 }
 
 #rocket {
-  padding-top:30px;
   position: relative;
 }
 
@@ -245,17 +245,31 @@ a.font{
   float: right;
   position:relative;
   text-decoration: none;
-  margin-top:20px;
+  margin-top:5px;
   margin-right:30px;
+}
+
+div.uname1{
+  font-family: UhBeeKeongKeong;
+  font-size: 17px;
+  color:white;
+  width:250px;
+  height:25px;
+  text-align: center;
+}
+
+div.uname1{
+  width:250px;
+  height:25px;
 }
 
 p.size{
   position: relative;
   float:left;
-  margin-top: -20px;
+  margin-top: 0px;
   color:white;
   font-family: 'KoPubDotum';
-  margin-left:20px;
+  margin-left:15px;
 }
 
 /*****/

@@ -27,10 +27,12 @@
                 </div>
             </profile_pic>
             <id>
-                <p>
+                <div class = "uname1">
                     <a>{{ username }}</a>
-                    &nbsp;&nbsp;
-                </p>
+                </div>
+                <div class = "uname2">
+                    <a href="/logout/" class="font">로그아웃</a>
+                </div>
             </id>
             <directory>
                 <ul>
@@ -49,15 +51,12 @@
                     <img class = "over_rocket" src="{% static 'css/main_image/rocket2.png' %}" style="width:55%; clip:rect(calc(({{available_size}} - {{used_size}}) / {{ available_size }} * 137.5 * 1px) 137.5px 137.5px 0px)">
 
                 </div>
+                <div>
+                  <p class = "size"></p>
+                </div>
             </rocket>
 
-            <div>
-              <p class = "size">
 
-            </p>
-
-              <a href="/logout/" class="font">로그아웃</a>
-            </div>
 
         </div>
     </nav>
