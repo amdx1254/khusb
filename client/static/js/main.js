@@ -171,7 +171,7 @@ function list_files(recently, path) {
             },
             error: function (data) {
                 goMainPage();
-                showSnackBar("An error occured, please try again later")
+                makeSnackBar("An error occured, please try again later", 3000)
             }
     });
 }
@@ -197,7 +197,7 @@ function list_share() {
         },
         error: function (data) {
             goMainPage();
-            showSnackBar("An error occured, please try again later")
+            makeSnackBar("An error occured, please try again later", 3000)
         },
         async: false
     });
@@ -222,7 +222,7 @@ function list_do_share() {
         },
         error: function (data) {
             goMainPage();
-            showSnackBar("An error occured, please try again later")
+            makeSnackBar("An error occured, please try again later", 3000)
         },
         async: false
     });
@@ -239,7 +239,7 @@ function list_modal(path, method) {
             },
             error: function (data) {
                 goMainPage();
-                showSnackBar("An error occured, please try again later")
+                makeSnackBar("An error occured, please try again later", 3000)
             }
     });
 }
@@ -464,7 +464,7 @@ function sortTable(n) {
     }
 }
 
-function make_upload(file_len, file_num, path) {
+function make_upload(file_len, file_num, path, snackbar_id) {
     uploadaborted = false;
     var urls;
     if(file_len > file_num && !uploadaborted){
@@ -476,10 +476,10 @@ function make_upload(file_len, file_num, path) {
                         'path': path,
                         'uploadid': uploadid
             });
-            closeSnackBar();
+            closeSnackBar(snackbar_id);
             $("#uploadeditem").html("");
             $("#uploadInput").val("");
-            showSnackBar("업로드 중단");
+            makeSnackBar("업로드 중단", 3000);
             $("#uploadBtn").show();
             $("#abortBtn").attr("hidden",'');
 
@@ -512,7 +512,7 @@ function make_upload(file_len, file_num, path) {
                 }
             },
             error: function (data) {
-                showSnackBar("An error occured, please try again later")
+                makeSnackBar("An error occured, please try again later", 3000)
                 goMainPage();
             }
         }).done(function () {
@@ -530,7 +530,7 @@ function make_upload(file_len, file_num, path) {
             }
             for (url in urls) {
                 filedata = $("#uploadInput")[0].files[file_num].slice(processed, processed + slice_length);
-                upload_file(urls[url], filedata, chunk_num, len_url, len_file, file_num, file_len, path);
+                upload_file(urls[url], filedata, chunk_num, len_url, len_file, file_num, file_len, path, snackbar_id);
                 processed = processed + slice_length;
                 chunk_num++;
             }
@@ -541,17 +541,18 @@ function make_upload(file_len, file_num, path) {
         $(document).on('click','#abortBtn', function() {
 
         });
-        closeSnackBar();
-        showSnackBar("업로드 완료");
+        closeSnackBar(snackbar_id);
+        makeSnackBar("업로드 완료", 3000);
         $("#uploadeditem").html("");
         $("#uploadInput").val("");
     }
 }
 
-function upload_file(url, filedata, chunk_id, len_url, len_file, file_num, file_len, path) {
+function upload_file(url, filedata, chunk_id, len_url, len_file, file_num, file_len, path, snackbar_id) {
     var xhr = new XMLHttpRequest();
     xhr.upload.addEventListener("progress", function (e) {
         if(uploadaborted){
+            closeSnackBar(snackbar_id);
             xhr.abort();
             return;
         }
@@ -566,7 +567,7 @@ function upload_file(url, filedata, chunk_id, len_url, len_file, file_num, file_
         var display_len = byteTosize(len_file);
         var display_sum = byteTosize(sum);
         $('#size'+file_num).html(display_sum+'/'+display_len);
-        showPermanantSnackBar((file_num+1) + "/" + file_len + "  " + $("#uploadInput")[0].files[file_num].name + "   " + "<progress max=\"100\" value=\"0\" id=\"snackprogress\"></progress>" + "   " + display_sum + "/" + display_len);
+        changeSnackBarContent(snackbar_id,"<td id=\"snackbar_content\">"+ (file_num+1) + "/" + file_len + "  " + $("#uploadInput")[0].files[file_num].name + "   " + "<progress max=\"100\" value=\"0\" id=\"snackprogress\"></progress>" + "   " + display_sum + "/" + display_len + "</td><td id=\"abortBtn\"><button type=\"button\" class=\"btn btn-default btn-block\" id=\"abortBtn\" style=\"color: white;\">x</button></td>");
         $('#snackprogress').val(per);
 
     });
@@ -596,11 +597,11 @@ function upload_file(url, filedata, chunk_id, len_url, len_file, file_num, file_
                     success: function (data) {
                         window.onunload=null;
                         list_files("", currentPath);
-                        make_upload($("#uploadInput")[0].files.length, file_num+1, path);
+                        make_upload($("#uploadInput")[0].files.length, file_num+1, path, snackbar_id);
                     },
                     error: function (data) {
                         goMainPage();
-                        showSnackBar("An error occured, please try again later")
+                        makeSnackBar("An error occured, please try again later", 3000)
                     }
                 });
             }
@@ -617,13 +618,13 @@ function remove_file(items, file_len, file_num) {
             url: '/api/delete/',
             success: function (data) {
                 removed++;
-                showSnackBar("삭제중...");
+                makeSnackBar("삭제중...", 3000);
                 $("#removed"+file_num).html("deleted");
                 list_files("", currentPath);
             },
             error: function (data) {
                 goMainPage();
-                showSnackBar("An error occured, please try again later")
+                makeSnackBar("An error occured, please try again later", 3000)
             }
         });
 }
@@ -637,18 +638,19 @@ function remove_share(items, file_len, file_num) {
             url: '/api/removeshare/',
             success: function (data) {
                 removed++;
-                showSnackBar("삭제중...");
+                makeSnackBar("삭제중...", 3000);
                 $("#removed"+file_num).html("deleted");
                 list_do_share();
             },
             error: function (data) {
                 goMainPage();
-                showSnackBar("An error occured, please try again later")
+                makeSnackBar("An error occured, please try again later", 3000)
             }
         });
 }
 
-function move_file(items, file_len, file_num, from, to) {
+var moved_file = 0;
+function move_file(items, file_len, file_num, from, to, id) {
         $.ajax({
             method: "POST",
             data: {
@@ -657,19 +659,24 @@ function move_file(items, file_len, file_num, from, to) {
             },
             url: '/api/move/',
             success: function (data) {
+                moved_file++;
+                if(moved_file == file_len)
+                    closeSnackBar(id);
                 list_files('', currentPath);
-                closeSnackBar();
-                showSnackBar("이동완료");
+                makeSnackBar(items[file_num] + ": 이동완료", 3000);
             },
             error: function (data) {
+                moved_file++;
+                if(moved_file == file_len)
+                    closeSnackBar(id);
                 goMainPage();
-                closeSnackBar();
-                showSnackBar(items[file_num] +"  이 작업은 허용되지 않습니다");
+                makeSnackBar(items[file_num] +": 이 작업은 허용되지 않습니다", 3000);
             }
         });
 }
 
-function copy_file(items, file_len, file_num, from, to) {
+var copied_file = 0;
+function copy_file(items, file_len, file_num, from, to, id) {
         $.ajax({
             method: "POST",
             data: {
@@ -678,14 +685,18 @@ function copy_file(items, file_len, file_num, from, to) {
             },
             url: '/api/copy/',
             success: function (data) {
+                copied_file++;
+                if(copied_file == file_len)
+                    closeSnackBar(id);
                 list_files('', currentPath);
-                closeSnackBar();
-                showSnackBar("복사완료");
+                makeSnackBar(items[file_num] + ": 복사완료", 3000);
             },
             error: function (data) {
+                copied_file++;
+                if(copied_file == file_len)
+                    closeSnackBar(id);
                 goMainPage();
-                closeSnackBar();
-                showSnackBar(items[file_num] +"  이 작업은 허용되지 않습니다");
+                makeSnackBar(items[file_num] +"  이 작업은 허용되지 않습니다", 3000);
             }
         });
 }
@@ -703,7 +714,7 @@ function share_file(items, file_len, file_num, email) {
                 shared++;
                 if(shared == file_len) {
                     $("#shareModal").modal("toggle");
-                    showSnackBar(file_len + "개의 파일이 공유되었습니다");
+                    makeSnackBar(file_len + "개의 파일이 공유되었습니다", 3000);
                 }
             },
             error: function (data) {
@@ -713,37 +724,42 @@ function share_file(items, file_len, file_num, email) {
                 }
                     //showSnackBar("이미 공유 되었습니다.");
                 else if(data['responseJSON']['error'] == 'Cannot share to owner')
-                    showSnackBar("자신에게는 공유할 수 없습니다");
+                    makeSnackBar("자신에게는 공유할 수 없습니다", 3000);
                 else
-                    showSnackBar("존재하지 않는 Email입니다");
+                    makeSnackBar("존재하지 않는 Email입니다", 3000);
             }
         });
 }
 
-function showSnackBar(text) {
-    // Get the snackbar DIV
-    var x = document.getElementById("snackbar")
-    $("#snackbar").html(text);
-    // Add the "show" class to DIV
-    x.className = "show";
-
-    // After 3 seconds, remove the show class from DIV
-    setTimeout(function(){ x.className = x.className.replace("show", "hide"); }, 3000);
+function changeSnackBarContent(id, text){
+    $("#"+id).html(text);
 }
 
-function showPermanantSnackBar(text) {
-    // Get the snackbar DIV
-    var x = document.getElementById("snackbar_download");
-    $("#snackbar_content").html(text);
-    // Add the "show" class to DIV
-    x.className = "show";
+function CreateUploadSnackBar() {
+    var options = {
+        content: "",
+        timeout: 0,
+        htmlAllowed: true
+    };
+    var id = $.snackbar(options)[0].id;
+    return id;
 }
 
-function closeSnackBar() {
-    // Get the snackbar DIV
-    var x = document.getElementById("snackbar_download");
+function makeSnackBar(text, timeout) {
+    var options = {
+        content: text,
+        timeout: timeout,
+        htmlAllowed: true
+    };
+    var id = $.snackbar(options)[0].id;
+    $("#"+id).snackbar("show");
+    return id;
+}
 
-    x.className = x.className.replace("show", "hide");
+function closeSnackBar(id) {
+    // Get the snackbar DIV
+    $("#"+id).html("");
+    $("#"+id).snackbar("hide");
 }
 
 function findCheckedItems() {
@@ -767,8 +783,8 @@ function findCheckedItemsUUID() {
 }
 
 $(document).on('click', '#uploadBtn', async function () {
-
-    make_upload($("#uploadInput")[0].files.length, 0, currentPath);
+    var id = CreateUploadSnackBar();
+    make_upload($("#uploadInput")[0].files.length, 0, currentPath, id);
 });
 
 $(document).on('click', '#createBtn', async function () {
@@ -782,12 +798,12 @@ $(document).on('click', '#createBtn', async function () {
         url: '/api/create/',
         success: function (data) {
             $("#createDirectoryModal").modal("toggle");
-            showSnackBar("폴더 생성완료");
+            makeSnackBar("폴더 생성완료", 3000);
             list_files("", currentPath);
         },
         error: function (data) {
             goMainPage();
-            showSnackBar("An error occured, please try again later")
+            makeSnackBar("An error occured, please try again later", 3000)
         }
     });
 });
@@ -829,7 +845,7 @@ $(document).on('click', '#star', function () {
         },
         error: function (data) {
             goMainPage();
-            showSnackBar("An error occured, please try again later")
+            makeSnackBar("An error occured, please try again later", 3000)
         },
         async: false
     });
@@ -856,7 +872,7 @@ $(document).on('click', '#stars', function () {
         },
         error: function (data) {
             goMainPage();
-            showSnackBar("An error occured, please try again later")
+            makeSnackBar("An error occured, please try again later", 3000)
         },
         async: false
     });
@@ -951,24 +967,26 @@ $(document).on('click','.copy', function() {
 });
 
 $(document).on('click','#moveBtn', function() {
-    showPermanantSnackBar("이동중..");
-    var path = $("#movePath").html().substring(5);
+    moved_file = 0;
+    var id = makeSnackBar("이동중..", 0);
+    var path = $("#movePath").text().substring(5);
     var items = findCheckedItems();
     removed = 0;
     $("#moveModal").modal('toggle');
     for(var i = 0; i<items.length;i++) {
-        move_file(items, items.length, i, currentPath, path);
+        move_file(items, items.length, i, currentPath, path, id);
     }
 });
 
 $(document).on('click','#copyBtn', function() {
-    showPermanantSnackBar("복사중..");
-    var path = $("#copyPath").html().substring(5);
+    copied_file = 0;
+    var id = makeSnackBar("복사중..", 0);
+    var path = $("#copyPath").text().substring(5);
     var items = findCheckedItems();
     removed = 0;
     $("#copyModal").modal('toggle');
     for(var i = 0; i<items.length;i++) {
-        copy_file(items, items.length, i, currentPath, path);
+        copy_file(items, items.length, i, currentPath, path, id);
     }
 });
 
@@ -996,7 +1014,7 @@ $(document).on('input','#search', async function() {
             },
             error: function (data) {
                 goMainPage();
-                showSnackBar("An error occured, please try again later")
+                makeSnackBar("An error occured, please try again later", 3000)
             }
         });
     } else {

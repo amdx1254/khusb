@@ -1,0 +1,42 @@
+#snackbar-container {
+  position: fixed;
+  bottom: 30px;
+  z-index: 99999;
+  text-align: center;
+}
+.snackbar {
+  overflow: hidden;
+  clear: both;
+  min-width: 288px;
+  max-width: 568px;
+  text-align: center;
+  cursor: pointer;
+  opacity: 0;
+}
+.snackbar.snackbar-opened {
+  text-align: center;
+  height: auto;
+  opacity: 1;
+}
+@media (max-width: 767px) {
+  #snackbar-container {
+    text-align: center;
+    left: 0px !important;
+    right: 0px;
+    width: 100%;
+  }
+  #snackbar-container .snackbar {
+    text-align: center;
+    min-width: 100%;
+  }
+  #snackbar-container [class="snackbar snackbar-opened"] ~ .snackbar.toast {
+    text-align: center;
+    margin-top: 20px;
+  }
+  #snackbar-container [class="snackbar snackbar-opened"] {
+    text-align: center;
+    border-radius: 0;
+    margin-bottom: 0;
+  }
+}
+/*# sourceMappingURL=snackbar.css.map */

@@ -392,7 +392,8 @@ class FileMoveApi(APIView):
 
     def post(self, request):
         try:
-
+            print(request.data['from_path'])
+            print(request.data['to_path'])
             from_object = File.objects.get(owner=request.user, path=request.data['from_path'])
             to_parent_object = File.objects.get(owner=request.user, path=request.data['to_path'])
             origin_name = from_object.name
