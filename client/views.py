@@ -51,9 +51,49 @@ def CreateAccountView(request):
         elif(r.text.find('Enter a valid username')>0):
             return render(request, 'client/register.html', {'data': '올바른 아이디를 입력하세요.'})
 
-
-
         return render(request, 'client/register.html', {'data': r.text})
+
+
+@csrf_exempt
+def FindPasswordView(request):
+    if(check_auth(request)):
+        return redirect('list-view')
+    if(request.method == 'GET'):
+        return render(request, 'client/findpassword.html')
+
+    elif(request.method=='POST'):
+        settings.DOMAIN = request.META['HTTP_HOST']
+        email = request.POST['email']
+        # 하나라도 비어있을 경우 오류 출력
+        if(email == ''):
+            return render(request, 'client/findpassword.html',{'data':"제대로 입력하세요"})
+
+        r = requests.post('http://127.0.0.1:8000/api/findpassword/', data={'email':email})
+
+        if(r.text.find(email)>0):
+            return render(request, 'client/findpassword.html', {'data': '인증 메일을 ' + email + '로 전송하였습니다.'})
+
+        return render(request, 'client/findpassword.html', {'data': r.text})
+
+
+def FindPasswordVerifyView(request, uidb64, token):
+    if(request.method == 'GET'):
+        return render(request, 'client/findpassword_done.html')
+
+    elif(request.method=='POST'):
+        settings.DOMAIN = request.META['HTTP_HOST']
+        password = request.POST['password']
+        password_conf = request.POST['password_conf']
+        # 하나라도 비어있을 경우 오류 출력
+        if(password == '' or password_conf == ''):
+            return render(request, 'client/findpassword_done.html',{'data':"제대로 입력하세요"})
+
+        r = requests.post('http://127.0.0.1:8000/api/verify/' + uidb64 + '/' + token, data={'password' : password}).json()
+
+        if(r['status']=='success'):
+            return render(request, 'client/findpassword_done.html', {'data': '변경이 완료되었습니다.'})
+        else:
+            return render(request, 'client/findpassword_done.html', {'data': '만료된 url입니다.'})
 
 
 def SocialLoginView(request):
