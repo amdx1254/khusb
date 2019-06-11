@@ -409,7 +409,20 @@ th {
     overflow-y: initial !important;
     overflow-x: initial !important;
 }
-.modal-body{
+
+#copyModal .modal-body, #moveModal .modal-body, #deleteModal .modal-body, #removeshareModal .modal-body{
     height: 300px;
     overflow-y: auto;
+}
+
+
+.modal-body .table thead th {
+  position: sticky;
+  top: -17px;
+}
+
+.modal-body .table {
+  width: 104%;
+  margin-top: -17px;
+  margin-left: -14px;
 }
