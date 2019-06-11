@@ -18,7 +18,7 @@ def check_auth(request):
         return False
     return True
 
-
+@csrf_exempt
 def CreateAccountView(request):
     if(check_auth(request)):
         return redirect('list-view')
