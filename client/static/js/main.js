@@ -1067,6 +1067,24 @@ $(document).on('hide.bs.modal', '#deleteModal', function() {
     $("#deleteditem").html("");
 });
 
+$(document).on('click','#resetBtn', function() {
+    $.ajax({
+        method: "POST",
+        data: {
+            'current_password': $("#current_password").val(),
+            'password': $("#password").val(),
+            'password_conf': $("#password_conf").val()
+        },
+        url: '/api/reset/',
+        success: function (data) {
+            $("#userInfoModal").find("#message").html("변경이 완료되었습니다");
+        },
+        error: function (data) {
+            $("#userInfoModal").find("#message").html(data.responseJSON['result']);
+        }
+    });
+});
+
 window.onpopstate = function(event) {
     if(window.location.pathname=="/listshare/") {
         list_share();

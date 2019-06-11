@@ -62,6 +62,25 @@ class FindPasswordApi(APIView):
             return Response({"status":"error","data":"User Not Exist"}, status=status.HTTP_400_BAD_REQUEST)
 
 
+class ResetPasswordApi(APIView):
+    permission_classes = (permissions.IsAuthenticated, )
+
+    def post(self, request):
+        current_pass = request.data['current_password']
+        password = request.data['password']
+        password_conf = request.data['password_conf']
+
+        if(not request.user.check_password(current_pass)):
+            return Response({'status': 'failed', 'result': '잘못된 패스워드 입니다.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if(password != password_conf):
+            return Response({'status': 'failed', 'result': '패스워드가 일치하지 않습니다.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        request.user.set_password(password)
+        request.user.save()
+        return Response({'status': 'success', 'result': '패스워드가 변경되었습니다.'}, status=status.HTTP_200_OK)
+
+
 class ResetPasswordToken(APIView):
     permission_classes = (permissions.AllowAny, )
 
@@ -102,3 +121,5 @@ class UserActivate(APIView):
                 return Response({'status':'failed','result':'만료된 링크입니다.'}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             print(traceback.format_exc())
+
+
