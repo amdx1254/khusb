@@ -14,6 +14,7 @@ from django.core.mail import EmailMessage
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from django.template.loader import render_to_string
+from django.conf import settings
 
 class CreateAccountAPIView(APIView):
     permission_classes = (permissions.AllowAny, )
@@ -30,7 +31,7 @@ class CreateAccountAPIView(APIView):
             user = User.objects.get(email=request.data['email'])
             uid = urlsafe_base64_encode(force_bytes(user.id))
             token = account_activation_token.make_token(user)
-            domain = "http://"+request.META['HTTP_HOST']+"/"
+            domain = settings.DOMAIN
             message = user.username + "님 아래 링크를 클릭해서 계정을 활성화 해주세요.\n" + domain+"activate/" + uid + "/" + token
             to_email = request.data['email']
             mail_subject = 'KHUSB email verification'

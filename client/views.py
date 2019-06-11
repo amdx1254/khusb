@@ -30,6 +30,7 @@ def CreateAccountView(request):
         email = request.POST['email']
         password = request.POST['password']
         password_conf = request.POST['password_conf']
+        settings.DOMAIN = request.META['HTTP_HOST']
         # 하나라도 비어있을 경우 오류 출력
         if(username == '' or password == ''):
             return render(request, 'client/register.html',{'data':"제대로 입력하세요"})
