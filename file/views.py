@@ -34,6 +34,7 @@ def increase_parent_size(parent, size):
         while(not tmp == None):
             obj = File.objects.select_for_update().get(id=tmp.id)
             obj.size = obj.size + int(size)
+            obj.modified = timezone.now()
             obj.save()
             tmp = tmp.parent
 
