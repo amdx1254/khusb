@@ -5,7 +5,7 @@ from django.conf import settings
 from rest_framework_jwt.settings import api_settings
 from django.contrib.auth import logout, authenticate, login
 from django.views.decorators.csrf import csrf_exempt
-
+from social_django.models import UserSocialAuth
 from django.contrib.auth.decorators import permission_required
 jwt_payload_handler = api_settings.JWT_PAYLOAD_HANDLER
 jwt_encode_handler = api_settings.JWT_ENCODE_HANDLER
@@ -107,6 +107,7 @@ def SocialLoginView(request):
 
 
 def LoginView(request):
+
     if(check_auth(request)):
         return redirect('list-view')
 
@@ -149,14 +150,20 @@ def ActivateView(request, uidb64, token):
 
 @csrf_exempt
 def listView(request,path='/'):
+
     if(not check_auth(request)):
         response = redirect('user-login')
         response.delete_cookie('khusb_token')
         return response
     if(path!='/'):
         path='/'+path+"/"
+
     if(request.method == 'GET'):
         r = {}
+        user = UserSocialAuth.objects.filter(user=request.user)
+        r['social'] = False
+        if (user.exists()):
+            r['social'] = True
         r['path'] = path
         r['username'] = request.user.username
         return render(request, 'client/main.html', r)
@@ -170,6 +177,10 @@ def shareView(request):
         return response
     if(request.method == 'GET'):
         r = {}
+        user = UserSocialAuth.objects.filter(user=request.user)
+        r['social'] = False
+        if (user.exists()):
+            r['social'] = True
         r['path'] = "/Shared Folder"
         r['username'] = request.user.username
         return render(request, 'client/share.html', r)
@@ -183,6 +194,10 @@ def shareDoneView(request):
         return response
     if(request.method == 'GET'):
         r = {}
+        user = UserSocialAuth.objects.filter(user=request.user)
+        r['social'] = False
+        if (user.exists()):
+            r['social'] = True
         r['path'] = "/Shared Folder"
         r['username'] = request.user.username
         return render(request, 'client/listsharedone.html', r)

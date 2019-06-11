@@ -29,7 +29,7 @@
             <id>
                 <div class = "uname1">
                     <a>{{ username }}</a>
-                    <a id="#userInfoModal" class="upload" data-toggle="modal" data-target="#userInfoModal" style="cursor: pointer;"><img src="{% static 'css/main_image/config.png' %}" style="width:20px;height:20px;"></a>
+                    <a id="#userInfoModal" data-toggle="modal" data-target="#userInfoModal" style="cursor: pointer;"><img src="{% static 'css/main_image/config.png' %}" style="width:20px;height:20px;"></a>
                 </div>
                 <div class = "uname2">
                     <a href="/logout/" class="font">로그아웃</a>
@@ -290,16 +290,20 @@
                     <table class="table" id="userinfo">
                         <tr><td>이름</td> <td> {{ request.user.username }}</td></tr>
                         <tr><td>이메일</td> <td> {{  request.user.email  }}</td></tr>
+                        {%  if not social %}
                         <tr><td>현재 비밀번호</td> <td>{% csrf_token %}<input type="password" id="current_password"></td></tr>
                         <tr><td>변경 비밀번호</td> <td>{% csrf_token %}<input type="password" id="password"></td></tr>
                         <tr><td>변경 비밀번호 확인</td> <td>{% csrf_token %}<input type="password" id="password_conf"></td></tr>
+                        {%  endif %}
                     </table>
                 <div id="message" style="color: red;">
                 </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                {%  if not social %}
                 <button type="button" class="btn btn-primary" id="resetBtn">변경</button>
+                {%  endif %}
             </div>
         </div>
     </div>
