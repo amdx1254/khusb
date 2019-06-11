@@ -32,7 +32,7 @@ class CreateAccountAPIView(APIView):
             uid = urlsafe_base64_encode(force_bytes(user.id))
             token = account_activation_token.make_token(user)
             domain = settings.DOMAIN
-            message = user.username + "님 아래 링크를 클릭해서 계정을 활성화 해주세요.\n" + domain+"activate/" + uid + "/" + token
+            message = user.username + "님 아래 링크를 클릭해서 계정을 활성화 해주세요.\n" + "http://"+domain+"/activate/" + uid + "/" + token
             to_email = request.data['email']
             mail_subject = 'KHUSB email verification'
             email = EmailMessage(mail_subject, message, to=[to_email])
