@@ -959,10 +959,12 @@ $(document).on('click','#deleteBtn', function() {
 });
 
 $(document).on('click','.move', function() {
+    $("#movefiles").html("");
     list_modal('/', 'move');
 });
 
 $(document).on('click','.copy', function() {
+    $("#copyfiles").html("");
     list_modal('/', 'copy');
 });
 
