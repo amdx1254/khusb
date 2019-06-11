@@ -21,7 +21,7 @@
                        "nav  path"
                        "nav  main"
                        "foot foot";
-  grid-template-rows: 110px 50px 1fr 50px;
+  grid-template-rows: 111px 50px 1fr 50px;
   grid-template-columns: 250px 1fr;
   background-color: white;
 }
@@ -36,7 +36,13 @@ body, html {
   background-image: url("main_image/blurred_nav.PNG");
   background-position: center;
   background-size: cover;
+  overflow: hidden;
+  position: fixed;
+  width: 250px;
+  height: 95%;
 }
+
+
 
 .main_page > header {
   grid-area: head;
@@ -44,16 +50,25 @@ body, html {
   background-position: center;
   background-size: cover;
   font-family: UhBeeKeongKeong;
+  position: fixed;
+  height: 111px;
+  width: 100%;
+  left: 250px;
 }
 
 .main_page > path {
   grid-area: path;
   background-image: url("main_image/path.png");
-  color: white;
+  background-color: white;
   padding-top: 15px;
+  position:fixed;
+  top:111px;
+  left: 250px;
+  width: 100%
 }
 
 .main_page > path p {
+  color: white;
   vertical-align: center;
   padding-left: 30px;
   font-family: DXStar;
@@ -62,8 +77,8 @@ body, html {
 .main_page > main {
   grid-area: main;
   background-color : white;
-  margin: 10px;
   border-radius: 10px;
+  top: 160px;
 }
 
 .main_page > footer {
@@ -71,6 +86,9 @@ body, html {
   color: white;
   background-image: url(main_image/footer_body.PNG);
   background-position: bottom;
+  position:fixed;
+  bottom:0;
+  width:100%;
 }
 
 .nav {
@@ -171,7 +189,7 @@ li a:hover {
   grid-template-areas: "logo logo logo"
                        "search space load";
   grid-template-rows: 60% 40%;
-  grid-template-columns: 600px 1fr 500px;
+  grid-template-columns: 200px 1fr 710px;
 }
 
 .header > logo {
@@ -363,4 +381,26 @@ body{
 
 .file {
     color: blue !important;
+}
+
+.table {
+   overflow-y: auto;
+   height: 100px;
+}
+
+.table thead th {
+  position: sticky;
+  top: 161px;
+}
+
+table  {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+th, td {
+  padding: 8px 16px;
+}
+th {
+  background:#eee;
 }
