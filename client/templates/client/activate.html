@@ -1,0 +1,29 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html lang="ko">
+    <head>
+        <meta charset="utf-8">
+		<link rel="stylesheet" href="{% static 'css/login.css' %}">
+    </head>
+    <body>
+        <div class="white_box">
+            <logo>
+                &nbsp;&nbsp;<a href="../" style="color:white">KHUSB</a>
+            </logo>
+            <white_box>
+                <h1>C O N N E C T I N G</h1>
+                <img src="{% static 'css/login/link.png' %}" style="width:30px;height=30px;display:block;margin-right:auto;margin-left:auto">
+                <br>
+                <div id="message" style="color: red;">
+                    {{ data }}
+                </div>
+                <div>
+                    <a href="/">로그인 페이지로</a>
+                </div>
+            </white_box>
+            <Oauth>
+                <a href="{% url 'social:begin' 'google-oauth2' %}"><button type="button"><img src="{% static 'css/login/google.png' %}" style="width:20px;height:20px">&nbsp;&nbsp;Google 계정 로그인</button></a>
+            </Oauth>
+        </div>
+    </body>
+</html>

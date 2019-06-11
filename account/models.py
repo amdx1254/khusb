@@ -36,7 +36,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     date_joined = models.DateTimeField(default=timezone.now)
     max_size = models.BigIntegerField(default=107374182400)
     cur_size = models.BigIntegerField(default=0)
-
+    active = models.BooleanField(default=True)
     objects = UserManager()
 
     USERNAME_FIELD = 'email'

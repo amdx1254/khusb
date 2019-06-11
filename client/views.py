@@ -5,6 +5,7 @@ from django.conf import settings
 from rest_framework_jwt.settings import api_settings
 from django.contrib.auth import logout, authenticate, login
 from django.views.decorators.csrf import csrf_exempt
+
 from django.contrib.auth.decorators import permission_required
 jwt_payload_handler = api_settings.JWT_PAYLOAD_HANDLER
 jwt_encode_handler = api_settings.JWT_ENCODE_HANDLER
@@ -38,13 +39,7 @@ def CreateAccountView(request):
         r = requests.post('http://127.0.0.1:8000/api/register/', data={'email':email,'username':username, 'password':password})
 
         if(r.text.find(email)>0):
-            r = requests.post('http://127.0.0.1:8000/api/login/',
-                              data={'email': email, 'password': password}).json()
-            print(r)
-            response = redirect('list-view')
-            response.set_cookie('khusb_token',r['token'])
-
-            return response
+            return render(request, 'client/register.html', {'data': '인증 메일을 ' + email + '로 전송하였습니다.'})
 
         elif(r.text.find("A user with that username")>0):
             return render(request, 'client/register.html', {'data': '존재하는 ID 입니다.'})
@@ -80,6 +75,8 @@ def LoginView(request):
     if(request.method == 'POST'):
         email = request.POST['email']
         pwd = request.POST['password']
+        if(email == '' or pwd == ''):
+            return render(request, 'client/login.html', {'data': '일치하는 정보가 없습니다'})
 
         r = requests.post('http://127.0.0.1:8000/api/login/', data={'email':email,'password':pwd}).json()
 
@@ -87,12 +84,26 @@ def LoginView(request):
             return render(request, 'client/login.html', {'data':'일치하는 정보가 없습니다'})
 
         user = authenticate(email=email, password=pwd)
+        if(user.active == False):
+            return render(request, 'client/login.html', {'data':'인증이 완료되지 않은 계정입니다.'})
         if(user != None):
             print("LOGON")
             login(request, user)
         response = redirect('list-view')
         response.set_cookie('khusb_token',r['token'], max_age=86400)
         return response
+
+
+def ActivateView(request, uidb64, token):
+
+    r = requests.get('http://127.0.0.1:8000/api/activate/'+uidb64+'/'+token).json()
+    print(r)
+    if(r['status'] == 'success'):
+        return render(request, 'client/activate.html', {'data': '계정이 활성화되었습니다'})
+    else:
+        return render(request,'client/activate.html', {'data': '만료된 링크입니다'})
+
+
 
 
 @csrf_exempt

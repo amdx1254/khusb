@@ -40,13 +40,18 @@ if env_file is None: # System environ
     try:
         GOOGLE_KEY = os.environ['GOOGLE_KEY']
         GOOGLE_SECRET = os.environ['GOOGLE_SECRET']
+        EMAIL_ID = os.environ['EMAIL_ID']
+        EMAIL_PASSWORD = os.environ['EMAIL_PASSWORD']
+        EMAIL_NAME = os.environ['EMAIL_NAME']
     except KeyError as error_msg:
         raise ImproperlyConfigured(error_msg)
 else: # JSON env
     envs = json.loads(env_file.read())
     GOOGLE_KEY = get_env('GOOGLE_KEY', envs)
     GOOGLE_SECRET = get_env('GOOGLE_SECRET', envs)
-
+    EMAIL_ID = get_env('EMAIL_ID', envs)
+    EMAIL_PASSWORD = get_env('EMAIL_PASSWORD', envs)
+    EMAIL_NAME = get_env('EMAIL_NAME', envs)
 
 
 # Quick-start development settings - unsuitable for production
@@ -219,3 +224,11 @@ SOCIAL_AUTH_PIPELINE = (
     'social_core.pipeline.social_auth.load_extra_data',
     'social_core.pipeline.user.user_details',
 )
+
+EMAIL_USE_TLS = True
+EMAIL_PORT = 587
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST_USER = EMAIL_ID
+EMAIL_HOST_PASSWORD = EMAIL_PASSWORD
+SERVER_EMAIL = EMAIL_ID
+DEFAULT_FROM_MAIL = EMAIL_NAME
