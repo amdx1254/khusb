@@ -404,3 +404,12 @@ th, td {
 th {
   background:#eee;
 }
+
+.modal-dialog{
+    overflow-y: initial !important;
+    overflow-x: initial !important;
+}
+.modal-body{
+    height: 300px;
+    overflow-y: auto;
+}
