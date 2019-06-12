@@ -355,14 +355,17 @@ class FileCopyApi(APIView):
                 else:
                     duplicated = File.objects.filter(owner=request.user, path=request.data['to_path'] + name)
                 if (len(duplicated) > 0):
-                    name_bar = origin_name.split('.')
-                    if(len(name_bar)==1):
+                    if(from_object.is_directory):
                         name = origin_name + " (" + str(i) + ")"
                     else:
-                        name = name_bar[0]
-                        for n in range(1,len(name_bar)-1):
-                            name = name + "." + name_bar[n]
-                        name = name + " (" + str(i) + ")" + "." +  name_bar[len(name_bar)-1]
+                        name_bar = origin_name.split('.')
+                        if(len(name_bar)==1):
+                            name = origin_name + " (" + str(i) + ")"
+                        else:
+                            name = name_bar[0]
+                            for n in range(1,len(name_bar)-1):
+                                name = name + "." + name_bar[n]
+                            name = name + " (" + str(i) + ")" + "." +  name_bar[len(name_bar)-1]
                     i += 1
                 else:
                     found = True
@@ -421,14 +424,17 @@ class FileMoveApi(APIView):
                 else:
                     duplicated = File.objects.filter(owner=request.user, path=request.data['to_path'] + name)
                 if (len(duplicated) > 0):
-                    name_bar = origin_name.split('.')
-                    if(len(name_bar)==1):
+                    if(from_object.is_directory):
                         name = origin_name + " (" + str(i) + ")"
                     else:
-                        name = name_bar[0]
-                        for n in range(1,len(name_bar)-1):
-                            name = name + "." + name_bar[n]
-                        name = name + " (" + str(i) + ")" + "." +  name_bar[len(name_bar)-1]
+                        name_bar = origin_name.split('.')
+                        if(len(name_bar)==1):
+                            name = origin_name + " (" + str(i) + ")"
+                        else:
+                            name = name_bar[0]
+                            for n in range(1,len(name_bar)-1):
+                                name = name + "." + name_bar[n]
+                            name = name + " (" + str(i) + ")" + "." +  name_bar[len(name_bar)-1]
                     i += 1
                 else:
                     found = True
