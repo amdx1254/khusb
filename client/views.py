@@ -11,6 +11,8 @@ jwt_payload_handler = api_settings.JWT_PAYLOAD_HANDLER
 jwt_encode_handler = api_settings.JWT_ENCODE_HANDLER
 
 def check_auth(request):
+    if(not request.user.is_authenticated):
+        return False
     if(request.COOKIES.get('khusb_token') == None):
         return False
     r = requests.post('http://127.0.0.1:8000/api/verify/', data={'token' : request.COOKIES.get('khusb_token')}).json()
@@ -160,6 +162,7 @@ def listView(request,path='/'):
 
     if(request.method == 'GET'):
         r = {}
+
         user = UserSocialAuth.objects.filter(user=request.user)
         r['social'] = False
         if (user.exists()):
