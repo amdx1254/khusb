@@ -1137,6 +1137,8 @@ $(document).on('click', '.share', function() {
     var checked__items = findCheckedItems();
     if(checked__items.length == 1)
         $("#linkshareBtn").attr('hidden',false);
+    else
+        $("#linkshareBtn").attr('hidden',true);
 });
 
 $(document).on('click', '#linkshareBtn', function() {
