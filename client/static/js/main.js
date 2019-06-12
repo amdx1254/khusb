@@ -398,7 +398,7 @@ function load_files(value, files, cur_path) {
                 else
                     html += "<td id='star' style='cursor:default; color:orange;'>★</td>\n";
             } else {
-                if(view_share)
+                if(view_share || view_list)
                     html += "<td>"+ files[i]['owner'] + "</td>\n";
                 else
                     html += "<td>" + files[i]['shared_user'] + "</td>\n";
@@ -443,7 +443,7 @@ function load_files(value, files, cur_path) {
                 else
                     html += "<td id='star' style='cursor:default; color:orange;'>★</td>\n";
             } else {
-                if(view_share)
+                if(view_share || view_list)
                     html += "<td>"+ files[i]['owner'] + "</td>\n";
                 else
                     html += "<td>" + files[i]['shared_user'] + "</td>\n";
