@@ -12,12 +12,14 @@ var view_recent = false;
 var available_size;
 var used_size
 var uploadaborted = false;
+var view_list = false;
 
 function getCookie(name) {
   var value = "; " + document.cookie;
   var parts = value.split("; " + name + "=");
   if (parts.length == 2) return parts.pop().split(";").shift();
 }
+
 
 $(document).ready(function () {
     //Show contextmenu:
@@ -65,6 +67,7 @@ $(document).ready(function () {
     $(document).click(function () {
         $(".contextmenu").hide();
     });
+
 });
 
 function goMainPage() {
@@ -203,6 +206,29 @@ function list_share() {
     });
 }
 
+function list_link() {
+    var id = getParameterByName('id');
+    var loc = '/api/listshare/';
+    if(id != null)
+        loc = loc+"?id="+id+"&link=true";
+    else
+        return;
+    $.ajax({
+        method: "GET",
+        url: loc,
+        success: function (data) {
+            parentPath = data['parent'];
+            file_list = data['items'];
+            load_files("",file_list);
+        },
+        error: function (data) {
+            $("#error").html("잘못된 요청입니다");
+        },
+        async: false
+    });
+}
+
+
 function list_do_share() {
     view_recent = false;
     view_share = false;
@@ -314,14 +340,21 @@ function load_files(value, files, cur_path) {
         var id = getParameterByName('id');
         if(isfavorite){
             html += "<td style='text-align: left;'><a class='file' onclick=\"list_files('','/');\" style=\"cursor: pointer;\">..</a></td>";
-        } else if(view_share || view_share_done)
+        } else if(view_share || view_share_done || view_list)
         {
             if(parentPath != '' && id != null)
-                html += "<td style='text-align: left;'><a class='file' onclick=\"window.history.pushState('', '', '/listshare/?id=" + parentPath + "'); list_share();\" style=\"cursor: pointer;\">..</a></td>";
+                if(!view_list)
+                    html += "<td style='text-align: left;'><a class='file' onclick=\"window.history.pushState('', '', '/listshare/?id=" + parentPath + "'); list_share();\" style=\"cursor: pointer;\">..</a></td>";
+                else
+                    html += "<td style='text-align: left;'><a class='file' onclick=\"window.history.pushState('', '', '/listshare/?id=" + parentPath + "'); list_link();\" style=\"cursor: pointer;\">..</a></td>";
             else if(parentPath == '' && id != null)
-                html += "<td style='text-align: left;'><a class='file' onclick=\"window.history.pushState('', '', '/listshare/'); list_share();\" style=\"cursor: pointer;\">..</a></td>";
+                if(!view_list)
+                    html += "<td style='text-align: left;'><a class='file' onclick=\"window.history.pushState('', '', '/listshare/'); list_share();\" style=\"cursor: pointer;\">..</a></td>";
+                else
+                    html += "<td style='text-align: left;'><a class='file' onclick=\"window.history.pushState('', '', '/listshare/'); list_link();\" style=\"cursor: pointer;\">..</a></td>";
             else
-                html += "<td style='text-align: left;'><a class='file' href='/list/' >..</a></td>";
+                if(!view_list)
+                    html += "<td style='text-align: left;'><a class='file' href='/list/' >..</a></td>";
         }
         else {
             html += "<td style='text-align: left;'><a class='file' id='fuck' onclick=\"list_files('','"+parentPath+"'); window.history.pushState('', '', '/list"+parentPath+"');\" style=\"cursor: pointer;\">..</a></td>";
@@ -344,20 +377,22 @@ function load_files(value, files, cur_path) {
                 displayname = name + "/";
             else
                 displayname = path;
-            html += "<tr class='hover'>";
+            html += "<tr class='hover list_file'>";
             html += "<td><input type='checkbox' id='checkbox"+(i+1)+"' class='check' hidden='false'/></td>";
             if(checked.indexOf(path)>=0 && !isfavorite && !view_recent && !view_share){
                 prev_checked.push("#checkbox"+(i+1));
             }
             if(view_share)
                 html += "<td style='text-align: left;'><a class='file' onclick=\"window.history.pushState('', '', '/listshare/?id=" + file_id + "'); list_share();\" style=\"cursor: pointer;\">" + displayname + "</a></td>";
+            else if(view_list)
+                html += "<td style='text-align: left;'><a class='file' onclick=\"window.history.pushState('', '', '/link/?id=" + file_id + "'); list_link();\" style=\"cursor: pointer;\">" + displayname + "</a></td>";
             else if(view_share_done)
                 html += "<td style='text-align: left;'><a class='file' onclick=\"window.location.href='/list"+path+"'\" style=\"cursor: pointer;\">" + displayname + "</a></td>";
             else
                 html += "<td style='text-align: left;'><a class='file' id='file"+ i + "'style=\"cursor: pointer;\" onclick=\"list_files('','"+path+"'); window.history.pushState('', '', '/list"+path+"');\">" + displayname + "</a></td>";
             html += "<td>" + dateToString(modified) + "</td>";
             html += "<td>folder</td>";
-            if(!view_share && !view_share_done){
+            if(!view_share && !view_share_done && !view_list){
                 if(!files[i]['favorite'])
                     html += "<td id='star' style='cursor:default'>★</td>\n";
                 else
@@ -370,7 +405,7 @@ function load_files(value, files, cur_path) {
             }
 
             html += "<td id='path' hidden>" + files[i]['path'] + "</td>";
-            if(view_share_done)
+            if(view_share_done || view_list)
                 html += "<td id='shared_id' hidden>" + files[i]['shared_id'] + "</td>";
             html += "</tr>";
         }
@@ -388,19 +423,21 @@ function load_files(value, files, cur_path) {
                 displayname = name;
             else
                 displayname = path;
-            html += "<tr class='hover'>";
+            html += "<tr class='hover list_file'>";
             html += "<td><input type='checkbox' id='checkbox"+(i+1)+"' class='check' hidden='false'/></td>";
             if(checked.indexOf(path)>=0 && !isfavorite && !view_recent && !view_share){
                 prev_checked.push("#checkbox"+(i+1));
             }
             if(view_share)
                 html += "<td style='text-align: left;'><a class='file' href='/download/share/?id=" + file_id + "'>" + displayname + "</a></td>";
+            else if(view_list)
+                html += "<td style='text-align: left;'><a class='file' href='/download/share/?link=true&id=" + file_id +"'>" + displayname + "</a></td>";
             else
                 html += "<td style='text-align: left;'><a class='file' href='/download" + path + "'>" + displayname + "</a></td>";
 
             html += "<td>" + dateToString(modified) + "</td>";
             html += "<td>file</td>";
-            if(!view_share && !view_share_done){
+            if(!view_share && !view_share_done && !view_list){
                 if(!files[i]['favorite'])
                     html += "<td id='star' style='cursor:default'>★</td>\n";
                 else
@@ -413,7 +450,7 @@ function load_files(value, files, cur_path) {
             }
 
             html += "<td id='path' hidden>" + files[i]['path'] + "</td>";
-            if(view_share_done)
+            if(view_share_done || view_list)
                 html += "<td id='shared_id' hidden>" + files[i]['shared_id'] + "</td>";
             html += "</tr>";
 
@@ -730,6 +767,7 @@ function share_file(items, file_len, file_num, email) {
             }
         });
 }
+
 
 function changeSnackBarContent(id, text){
     $("#"+id).html(text);
@@ -1095,3 +1133,30 @@ window.onpopstate = function(event) {
   console.log("location: " + document.location + ", state: " + JSON.stringify(event.state));
 };
 
+$(document).on('click', '.share', function() {
+    var checked__items = findCheckedItems();
+    if(checked__items.length == 1)
+        $("#linkshareBtn").attr('hidden',false);
+});
+
+$(document).on('click', '#linkshareBtn', function() {
+    var checked__items = findCheckedItems();
+    if(checked__items.length == 1){
+        $.ajax({
+            method: "POST",
+            data: {
+                'path': checked__items[0],
+                'link': true
+            },
+            url: '/api/share/',
+            success: function (data) {
+                $("#shareresult").html("<input type='text' id='urlresult'></input>");
+                $("#urlresult").val(window.location.hostname+"/link/?id="+data['file_id'])
+                makeSnackBar("링크가 공유되었습니다", 3000);
+            },
+            error: function (data) {
+                makeSnackBar("에러가 발생하였습니다.", 3000);
+            }
+        });
+    }
+});

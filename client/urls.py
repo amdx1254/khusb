@@ -10,6 +10,7 @@ urlpatterns = [
     path('login-social', views.SocialLoginView, name='social-login'),
     path('list/', views.listView, name='list-view'),
     path('list/<path:path>/', views.listView, name='list-view'),
+    path('link/', views.LinkListView, name='link-view'),
     path('listshare/', views.shareView),
     path('listdoshare/', views.shareDoneView),
     path('logout/', views.LogoutView),

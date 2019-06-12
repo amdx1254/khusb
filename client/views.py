@@ -205,18 +205,22 @@ def shareDoneView(request):
 
 def DownloadView(request, path):
     path = '/'+path
-    if(not check_auth(request)):
-        response = redirect('user-login')
-        response.delete_cookie('khusb_token')
-        return response
     if(request.method == 'GET'):
         error=''
         if 'error' in request.GET:
             error = request.GET['error']
         id = request.GET.get('id','')
+        is_link = request.GET.get('link','')
         if(id != ''):
-            r = requests.get('http://127.0.0.1:8000/api/downloadshare/?id='+id,
-                             headers={'Authorization': 'Bearer ' + request.COOKIES.get('khusb_token')}).json()
+            if(not is_link):
+                if (not check_auth(request)):
+                    response = redirect('user-login')
+                    response.delete_cookie('khusb_token')
+                    return response
+                r = requests.get('http://127.0.0.1:8000/api/downloadshare/?id='+id,
+                                 headers={'Authorization': 'Bearer ' + request.COOKIES.get('khusb_token')}).json()
+            else:
+                r = requests.get('http://127.0.0.1:8000/api/downloadshare/?id=' + id + "&link=true").json()
         else:
             r = requests.get('http://127.0.0.1:8000/api/download'+path, headers={'Authorization': 'Bearer '+ request.COOKIES.get('khusb_token')}).json()
         print("DOWNLOADED",r)
@@ -230,3 +234,11 @@ def LogoutView(request):
     response = redirect('user-login')
     response.delete_cookie('khusb_token')
     return response
+
+
+@csrf_exempt
+def LinkListView(request):
+    if(request.method == 'GET'):
+        r = {}
+        r['path'] = "Shared Link"
+        return render(request, 'client/linklist.html', r)

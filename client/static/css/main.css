@@ -426,3 +426,9 @@ th {
   margin-top: -17px;
   margin-left: -14px;
 }
+
+#linkShareDiv {
+    display:none;
+    position:absolute;
+    z-index:10;
+}
