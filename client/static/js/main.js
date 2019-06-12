@@ -838,8 +838,11 @@ $(document).on('click', '#createBtn', async function () {
             list_files("", currentPath);
         },
         error: function (data) {
+            if(data.responseJSON['error']=='Already Exist')
+                makeSnackBar("이미 존재하는 폴더입니다")
+            else
+                makeSnackBar("An error occured, please try again later", 3000)
             goMainPage();
-            makeSnackBar("An error occured, please try again later", 3000)
         }
     });
 });
@@ -1150,8 +1153,9 @@ $(document).on('click', '#linkshareBtn', function() {
             },
             url: '/api/share/',
             success: function (data) {
-                $("#shareresult").html("<input type='text' id='urlresult'></input>");
-                $("#urlresult").val(window.location.hostname+"/link/?id="+data['file_id'])
+                $("#shareresult").html("<input type='text' id='urlresult' readonly style=\"width: 60%;\"></input><button onclick=\"linkCopy()\">복사</button>");
+                var url = window.location.hostname+"/link/?id="+data['file_id'];
+                $("#urlresult").val(url);
                 makeSnackBar("링크가 공유되었습니다", 3000);
             },
             error: function (data) {
@@ -1160,3 +1164,10 @@ $(document).on('click', '#linkshareBtn', function() {
         });
     }
 });
+
+function linkCopy() {
+  var copyText = document.getElementById("urlresult");
+  copyText.select();
+  document.execCommand("copy");
+  makeSnackBar("복사됨: "+copyText.value,3000);
+}

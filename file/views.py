@@ -195,6 +195,8 @@ class FileCreateStartApi(APIView):
             name = request.data['name']
             path = request.data['path']
             size = request.data['size']
+            if(size + request.user.cur_size > request.user.max_size):
+                return Response({"status": "200", "error": "Size exceeded"}, status=status.HTTP_400_BAD_REQUEST)
             filepath = path + name
             directory = File.objects.get(owner=request.user, path=path)
 

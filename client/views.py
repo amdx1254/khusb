@@ -43,7 +43,9 @@ def CreateAccountView(request):
 
         if(r.text.find(email)>0):
             return render(request, 'client/register.html', {'data': '인증 메일을 ' + email + '로 전송하였습니다.'})
-
+        if (r.text.find("email")):
+            r_json = r.json()
+            return render(request, 'client/register.html', {'data': r_json['email']})
         elif(r.text.find("A user with that username")>0):
             return render(request, 'client/register.html', {'data': '존재하는 ID 입니다.'})
         elif(r.text.find('Email is already in use')>0):
@@ -74,7 +76,8 @@ def FindPasswordView(request):
 
         if(r.text.find(email)>0):
             return render(request, 'client/findpassword.html', {'data': '인증 메일을 ' + email + '로 전송하였습니다.'})
-
+        if(r.text.find("User Not Exist")):
+            return render(request, 'client/findpassword.html', {'data': "일치하는 사용자가 없습니다."})
         return render(request, 'client/findpassword.html', {'data': r.text})
 
 
