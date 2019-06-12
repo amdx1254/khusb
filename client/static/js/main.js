@@ -346,12 +346,10 @@ function load_files(value, files, cur_path) {
                 if(!view_list)
                     html += "<td style='text-align: left;'><a class='file' onclick=\"window.history.pushState('', '', '/listshare/?id=" + parentPath + "'); list_share();\" style=\"cursor: pointer;\">..</a></td>";
                 else
-                    html += "<td style='text-align: left;'><a class='file' onclick=\"window.history.pushState('', '', '/listshare/?id=" + parentPath + "'); list_link();\" style=\"cursor: pointer;\">..</a></td>";
+                    html += "<td style='text-align: left;'><a class='file' onclick=\"window.history.pushState('', '', '/link/?id=" + parentPath + "'); list_link();\" style=\"cursor: pointer;\">..</a></td>";
             else if(parentPath == '' && id != null)
                 if(!view_list)
                     html += "<td style='text-align: left;'><a class='file' onclick=\"window.history.pushState('', '', '/listshare/'); list_share();\" style=\"cursor: pointer;\">..</a></td>";
-                else
-                    html += "<td style='text-align: left;'><a class='file' onclick=\"window.history.pushState('', '', '/listshare/'); list_link();\" style=\"cursor: pointer;\">..</a></td>";
             else
                 if(!view_list)
                     html += "<td style='text-align: left;'><a class='file' href='/list/' >..</a></td>";
